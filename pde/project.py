@@ -19,190 +19,408 @@ warnings.filterwarnings("ignore")
 
 # ── PAGE CONFIG ─────────────────────────────────────────────
 st.set_page_config(
-    page_title="Animasi ODE — Kota Tual",
+    page_title="ODE Kota Tual · Kelompok 5",
     page_icon="🌊",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# ── GLOBAL CSS ───────────────────────────────────────────────
+# ── GLOBAL CSS — PREMIUM EDITION ────────────────────────────
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
 
-html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-
-.stApp { background: #080C14; color: #E2E8F0; }
-
-[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #0D1523 0%, #0A1020 100%);
-    border-right: 1px solid rgba(99,179,237,0.15);
+/* ── BASE ── */
+html, body, [class*="css"] {
+    font-family: 'DM Sans', sans-serif;
 }
-[data-testid="stSidebar"] * { color: #CBD5E0 !important; }
-[data-testid="stSidebar"] .stSlider > div > div > div { background: #63B3ED !important; }
+.stApp {
+    background: #03070F;
+    color: #D6E4F0;
+    background-image:
+        radial-gradient(ellipse 80% 50% at 10% 0%, rgba(0,120,255,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 90% 100%, rgba(0,200,160,0.05) 0%, transparent 60%);
+}
 
+/* ── SIDEBAR ── */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #050B18 0%, #030710 100%);
+    border-right: 1px solid rgba(0,140,255,0.12);
+}
+[data-testid="stSidebar"] * { color: #B8CDD8 !important; }
+[data-testid="stSidebar"] .stSlider > div > div > div {
+    background: linear-gradient(90deg, #0066CC, #00B4D8) !important;
+    border-radius: 4px !important;
+}
+[data-testid="stSidebar"] .stSlider [data-baseweb="slider"] { padding: 4px 0 !important; }
+[data-testid="stSidebar"] h3 {
+    font-family: 'Syne', sans-serif !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.3px;
+}
+
+/* ── METRIC CARDS ── */
 [data-testid="metric-container"] {
-    background: linear-gradient(135deg, #0D1B2E 0%, #0F2340 100%);
-    border: 1px solid rgba(99,179,237,0.2);
-    border-radius: 12px;
-    padding: 16px 20px;
-    backdrop-filter: blur(10px);
+    background: linear-gradient(145deg, #060F20 0%, #071525 100%);
+    border: 1px solid rgba(0,140,255,0.18);
+    border-top: 2px solid rgba(0,180,216,0.35);
+    border-radius: 10px;
+    padding: 18px 20px 14px 20px;
+    transition: border-color 0.3s ease;
+}
+[data-testid="metric-container"]:hover {
+    border-color: rgba(0,140,255,0.45) !important;
+    border-top-color: rgba(0,200,180,0.6) !important;
 }
 [data-testid="metric-container"] label {
-    color: #718096 !important;
-    font-family: 'JetBrains Mono', monospace !important;
-    font-size: 10px !important;
-    letter-spacing: 1.2px;
+    color: #4E7A96 !important;
+    font-family: 'Space Mono', monospace !important;
+    font-size: 9px !important;
+    letter-spacing: 2px;
     text-transform: uppercase;
 }
 [data-testid="metric-container"] [data-testid="stMetricValue"] {
-    color: #63B3ED !important;
-    font-family: 'JetBrains Mono', monospace !important;
-    font-size: 20px !important;
-    font-weight: 600 !important;
+    color: #48CAE4 !important;
+    font-family: 'Syne', sans-serif !important;
+    font-size: 21px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.5px;
 }
-[data-testid="metric-container"] [data-testid="stMetricDelta"] { color: #68D391 !important; }
+[data-testid="metric-container"] [data-testid="stMetricDelta"] {
+    color: #52B788 !important;
+    font-family: 'Space Mono', monospace !important;
+    font-size: 10px !important;
+}
 
+/* ── TABS ── */
+.stTabs [data-baseweb="tab-list"] {
+    background: rgba(6,15,32,0.8) !important;
+    border-bottom: 1px solid rgba(0,140,255,0.12) !important;
+    gap: 2px !important;
+    padding: 0 4px !important;
+}
 .stTabs [data-testid="stTab"] button {
-    font-family: 'Inter', sans-serif !important;
-    font-size: 13px !important;
-    font-weight: 500 !important;
-    color: #718096 !important;
-    border-radius: 8px 8px 0 0 !important;
+    font-family: 'Syne', sans-serif !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    color: #4E7A96 !important;
+    letter-spacing: 0.3px;
+    border-radius: 6px 6px 0 0 !important;
+    padding: 10px 16px !important;
+    transition: color 0.2s ease !important;
 }
 .stTabs [data-testid="stTab"] button[aria-selected="true"] {
-    color: #63B3ED !important;
-    border-bottom: 2px solid #63B3ED !important;
-    background: rgba(99,179,237,0.06) !important;
+    color: #48CAE4 !important;
+    border-bottom: 2px solid #48CAE4 !important;
+    background: rgba(0,180,216,0.07) !important;
+}
+.stTabs [data-testid="stTab"] button:hover {
+    color: #90E0EF !important;
+    background: rgba(0,140,255,0.05) !important;
 }
 
+/* ── BUTTONS ── */
 div.stButton > button {
-    background: linear-gradient(135deg, #1A3A5C 0%, #1E4470 100%) !important;
-    color: #63B3ED !important;
-    border: 1px solid rgba(99,179,237,0.3) !important;
-    border-radius: 8px !important;
-    font-family: 'JetBrains Mono', monospace !important;
-    font-size: 12px !important;
-    letter-spacing: 0.5px;
-    padding: 8px 16px !important;
+    background: transparent !important;
+    color: #48CAE4 !important;
+    border: 1px solid rgba(0,180,216,0.4) !important;
+    border-radius: 6px !important;
+    font-family: 'Space Mono', monospace !important;
+    font-size: 11px !important;
+    letter-spacing: 0.8px;
+    padding: 7px 16px !important;
     transition: all 0.2s ease !important;
 }
 div.stButton > button:hover {
-    background: linear-gradient(135deg, #1E4470 0%, #245288 100%) !important;
-    border-color: rgba(99,179,237,0.6) !important;
-    transform: translateY(-1px) !important;
+    background: rgba(0,180,216,0.1) !important;
+    border-color: rgba(0,180,216,0.8) !important;
+    box-shadow: 0 0 16px rgba(0,180,216,0.2) !important;
 }
 
+/* ── HERO PREMIUM ── */
 .hero {
-    background: linear-gradient(135deg, #0D1B2E 0%, #0F2340 50%, #0D1B2E 100%);
-    border: 1px solid rgba(99,179,237,0.2);
-    border-radius: 16px;
-    padding: 32px 36px;
-    margin-bottom: 24px;
+    background: linear-gradient(135deg, #060F1F 0%, #071828 60%, #060F1F 100%);
+    border: 1px solid rgba(0,140,255,0.2);
+    border-radius: 14px;
+    padding: 36px 44px;
+    margin-bottom: 28px;
     position: relative;
     overflow: hidden;
 }
 .hero::before {
     content: '';
     position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, #63B3ED, #76E4F7, #68D391, transparent);
+    top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent 0%, #0096C7 30%, #48CAE4 50%, #52B788 70%, transparent 100%);
 }
 .hero::after {
     content: '';
     position: absolute;
-    top: -60px; right: -60px;
-    width: 200px; height: 200px;
-    background: radial-gradient(circle, rgba(99,179,237,0.06) 0%, transparent 70%);
+    top: -80px; right: -80px;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(0,150,199,0.08) 0%, transparent 65%);
     border-radius: 50%;
+    pointer-events: none;
+}
+.hero-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: #0096C7;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin: 0 0 12px 0;
 }
 .hero-title {
-    font-family: 'Inter', sans-serif;
-    font-size: 26px;
-    font-weight: 700;
-    color: #E2E8F0;
-    margin: 0 0 8px 0;
-    letter-spacing: -0.5px;
+    font-family: 'Syne', sans-serif;
+    font-size: 30px;
+    font-weight: 800;
+    color: #E8F4F8;
+    margin: 0 0 10px 0;
+    letter-spacing: -1px;
+    line-height: 1.15;
 }
+.hero-title span { color: #48CAE4; }
 .hero-sub {
-    font-size: 14px;
-    color: #718096;
-    margin: 0 0 16px 0;
-    line-height: 1.6;
+    font-size: 13.5px;
+    color: #5A8099;
+    margin: 0 0 20px 0;
+    line-height: 1.7;
+    max-width: 680px;
 }
 .badge {
     display: inline-flex;
     align-items: center;
-    background: rgba(99,179,237,0.12);
-    border: 1px solid rgba(99,179,237,0.25);
-    border-radius: 20px;
-    padding: 4px 12px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: #76E4F7;
-    margin-right: 8px;
+    background: rgba(0,150,199,0.1);
+    border: 1px solid rgba(0,150,199,0.22);
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: #48CAE4;
+    margin-right: 6px;
     margin-top: 4px;
+    letter-spacing: 0.5px;
 }
-.section-label {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    color: #63B3ED;
+.badge-green {
+    background: rgba(82,183,136,0.1);
+    border-color: rgba(82,183,136,0.22);
+    color: #52B788;
+}
+.hero-team {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(0,140,255,0.12);
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+.hero-team-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: #2A5A78;
     letter-spacing: 2px;
     text-transform: uppercase;
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(99,179,237,0.15);
 }
-.info-card {
-    background: rgba(99,179,237,0.05);
-    border: 1px solid rgba(99,179,237,0.15);
-    border-left: 3px solid #63B3ED;
-    border-radius: 0 8px 8px 0;
-    padding: 12px 16px;
+.hero-member {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.hero-member-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #48CAE4;
+    flex-shrink: 0;
+}
+.hero-member-name {
+    font-family: 'DM Sans', sans-serif;
     font-size: 13px;
-    color: #A0AEC0;
-    line-height: 1.8;
+    font-weight: 500;
+    color: #C8DDE8;
+}
+.hero-member-nim {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: #2A5A78;
+    margin-top: 1px;
+}
+
+/* ── SECTION LABEL ── */
+.section-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: #0096C7;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(0,140,255,0.12);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.section-label::before {
+    content: '';
+    display: inline-block;
+    width: 20px; height: 2px;
+    background: linear-gradient(90deg, #0096C7, #48CAE4);
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+/* ── INFO CARD ── */
+.info-card {
+    background: rgba(0,150,199,0.04);
+    border: 1px solid rgba(0,140,255,0.12);
+    border-left: 2px solid #0096C7;
+    border-radius: 0 8px 8px 0;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: #7A9BAD;
+    line-height: 1.85;
     margin: 8px 0;
 }
+
+/* ── FORMULA BOX ── */
 .formula-box {
-    background: #0A1520;
-    border: 1px solid rgba(99,179,237,0.2);
-    border-radius: 10px;
-    padding: 16px 20px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 13px;
-    color: #76E4F7;
+    background: #040C18;
+    border: 1px solid rgba(0,140,255,0.18);
+    border-radius: 8px;
+    padding: 20px 24px;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: #48CAE4;
     text-align: center;
-    line-height: 2;
-    margin: 12px 0;
+    line-height: 2.2;
+    margin: 14px 0;
+    position: relative;
+    overflow: hidden;
+}
+.formula-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(72,202,228,0.4), transparent);
+}
+
+/* ── JURNAL CARD ── */
+.jurnal-highlight {
+    background: linear-gradient(135deg, #060F20 0%, #071A28 100%);
+    border: 1px solid rgba(0,140,255,0.16);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 10px 0;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.25s ease;
+}
+.jurnal-highlight:hover { border-color: rgba(0,180,216,0.4); }
+.jurnal-highlight::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; bottom: 0; width: 3px;
+    background: linear-gradient(180deg, #48CAE4, #52B788);
+    border-radius: 3px 0 0 3px;
+}
+.jurnal-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: rgba(72,202,228,0.15);
+    position: absolute;
+    top: 12px; right: 20px;
+    line-height: 1;
+    user-select: none;
+}
+.jurnal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #C0D8E8;
+    margin-bottom: 6px;
+}
+.jurnal-body {
+    font-size: 12.5px;
+    color: #5A8099;
+    line-height: 1.75;
+}
+.jurnal-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0,150,199,0.1);
+    border: 1px solid rgba(0,150,199,0.2);
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: #48CAE4;
+    margin-top: 10px;
+    margin-right: 6px;
+}
+
+/* ── DIVIDER ── */
+.premium-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0,140,255,0.2), transparent);
+    margin: 20px 0;
+    border: none;
+}
+
+/* ── DATAFRAME ── */
+[data-testid="stDataFrame"] {
+    border: 1px solid rgba(0,140,255,0.12) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+}
+
+/* ── SELECTBOX & RADIO ── */
+[data-baseweb="select"] {
+    background: #050B18 !important;
+    border-color: rgba(0,140,255,0.2) !important;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #03070F; }
+::-webkit-scrollbar-thumb {
+    background: rgba(0,140,255,0.3);
+    border-radius: 4px;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ── PLOTLY DARK TEMPLATE (FIX: gunakan dict biasa, bukan go.Layout) ──
+# ── PLOTLY PREMIUM TEMPLATE ─────────────────────────────────
 PLOTLY_TEMPLATE = dict(
     layout=dict(
-        paper_bgcolor="#080C14",
-        plot_bgcolor="#0D1523",
-        font=dict(family="Inter, sans-serif", color="#A0AEC0", size=12),
+        paper_bgcolor="rgba(3,7,15,0)",
+        plot_bgcolor="#040C18",
+        font=dict(family="DM Sans, sans-serif", color="#7A9BAD", size=12),
         xaxis=dict(
-            gridcolor="rgba(255,255,255,0.05)",
-            linecolor="rgba(255,255,255,0.1)",
-            zerolinecolor="rgba(255,255,255,0.08)"
+            gridcolor="rgba(0,140,255,0.06)",
+            linecolor="rgba(0,140,255,0.15)",
+            zerolinecolor="rgba(0,140,255,0.1)",
+            tickfont=dict(family="Space Mono, monospace", size=10, color="#3A6A88")
         ),
         yaxis=dict(
-            gridcolor="rgba(255,255,255,0.05)",
-            linecolor="rgba(255,255,255,0.1)",
-            zerolinecolor="rgba(255,255,255,0.08)"
+            gridcolor="rgba(0,140,255,0.06)",
+            linecolor="rgba(0,140,255,0.15)",
+            zerolinecolor="rgba(0,140,255,0.1)",
+            tickfont=dict(family="Space Mono, monospace", size=10, color="#3A6A88")
         ),
         legend=dict(
-            bgcolor="rgba(13,27,46,0.85)",
-            bordercolor="rgba(99,179,237,0.2)",
+            bgcolor="rgba(4,12,24,0.92)",
+            bordercolor="rgba(0,140,255,0.15)",
             borderwidth=1,
-            font=dict(size=11)
+            font=dict(size=11, family="DM Sans, sans-serif", color="#8AABB8"),
         ),
-        margin=dict(l=60, r=30, t=50, b=50),
+        margin=dict(l=60, r=30, t=55, b=55),
+        hoverlabel=dict(
+            bgcolor="#040C18",
+            bordercolor="rgba(72,202,228,0.4)",
+            font=dict(family="Space Mono, monospace", size=11, color="#48CAE4"),
+        ),
     )
 )
 
@@ -218,14 +436,14 @@ def make_layout(**kwargs):
     base.update(kwargs)
     return go.Layout(**base)
 
-CYAN   = "#63B3ED"
-TEAL   = "#76E4F7"
-GREEN  = "#68D391"
-AMBER  = "#F6AD55"
-PURPLE = "#B794F4"
-CORAL  = "#FC8181"
-WHITE  = "#E2E8F0"
-MUTED  = "#718096"
+CYAN   = "#48CAE4"
+TEAL   = "#00B4D8"
+GREEN  = "#52B788"
+AMBER  = "#F4A261"
+PURPLE = "#A78BFA"
+CORAL  = "#F77F6E"
+WHITE  = "#E8F4F8"
+MUTED  = "#3A6A88"
 
 # ── DATA & PARAMETER JURNAL ──────────────────────────────────
 TAHUN_HIST  = np.array([2020, 2021, 2022, 2023, 2024], dtype=float)
@@ -295,16 +513,26 @@ pred_l_h = sol_log(t_rel_h, P0_HIST, k_fit_l, K_fit_l)
 
 # ── SIDEBAR ──────────────────────────────────────────────────
 with st.sidebar:
+    st.markdown("""
+    <div style="padding:16px 0 8px 0;">
+      <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#48CAE4;letter-spacing:-0.5px;line-height:1.2;">
+        ODE Kota Tual
+      </div>
+      <div style="font-family:'Space Mono',monospace;font-size:9px;color:#2A5A78;letter-spacing:2px;text-transform:uppercase;margin-top:4px;">
+        Kelompok 5 · 2025
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
     st.markdown('<div class="section-label">⚙ Parameter Model</div>', unsafe_allow_html=True)
     k_val = st.slider("k — laju pertumbuhan", 0.003, 0.050,
                       float(round(K_JURNAL, 4)), 0.001, format="%.4f",
                       help=f"Nilai jurnal: 0.0122 → setara {0.0122*100:.2f}%/tahun. "
                            f"Nilai saat ini: {float(round(K_JURNAL,4))*100:.2f}%/tahun")
-    # FIX 4b: Tampilkan k dalam % secara real-time agar tidak ambigu bagi pengguna awam
     st.markdown(
-        f"<div style='font-family:JetBrains Mono,monospace;font-size:11px;"
-        f"color:#68D391;margin-top:-8px;margin-bottom:8px;'>"
-        f"→ {k_val:.4f} = <b>{k_val*100:.2f}%</b> per tahun</div>",
+        f"<div style='font-family:Space Mono,monospace;font-size:10px;"
+        f"color:#52B788;margin-top:-6px;margin-bottom:10px;'>"
+        f"→ {k_val:.4f} = <b>{k_val*100:.2f}%</b> / tahun</div>",
         unsafe_allow_html=True
     )
     K_val = st.slider("K — kapasitas dukung (jiwa)",
@@ -324,50 +552,59 @@ with st.sidebar:
 
     st.markdown("---")
     st.markdown("""
-    <div style='font-size:11px;color:#4A5568;line-height:1.8;font-family:JetBrains Mono,monospace'>
-    <span style='color:#63B3ED'>Referensi</span><br>
+    <div style='font-size:10px;color:#1A4060;line-height:2;font-family:Space Mono,monospace;'>
+    <span style='color:#0096C7;letter-spacing:1.5px;'>REFERENSI</span><br>
     Armin & Remetwa, M.G.K.<br>
-    JIMAT Vol.6 No.1, 2025<br><br>
-    <span style='color:#63B3ED'>Data</span><br>
+    JIMAT Vol.6 No.1, 2025<br>
+    DOI: 10.63976/jimat.v6i1.804<br><br>
+    <span style='color:#0096C7;letter-spacing:1.5px;'>DATA SUMBER</span><br>
     BPS Provinsi Maluku<br>
     2020 – 2024<br><br>
-    <span style='color:#63B3ED'>──────────────────</span><br>
-    <span style='color:#68D391;font-weight:bold'>Kelompok 5</span><br>
-    <span style='color:#76E4F7'>Tugas Project</span><br>
-    <span style='color:#A0AEC0'>Persamaan Diferensial</span><br>
-    <span style='color:#A0AEC0'>Pemodelan Persamaan</span><br>
-    <span style='color:#A0AEC0'>Diferensial</span><br><br>
-    <span style='color:#F6AD55'>👤</span> <span style='color:#E2E8F0'>Albert Rafael Turnip</span><br>
-    <span style='color:#718096'>NIM: 4243540002</span><br><br>
-    <span style='color:#F6AD55'>👤</span> <span style='color:#E2E8F0'>Apriyani Simbolon</span><br>
-    <span style='color:#718096'>NIM: 4242240005</span>
+    <div style='border-top:1px solid rgba(0,140,255,0.15);padding-top:12px;margin-top:4px;'>
+    <span style='color:#0096C7;letter-spacing:1.5px;'>KELOMPOK 5</span><br>
+    <span style='color:#48CAE4;font-size:11px;'>Tugas Project</span><br>
+    <span style='color:#2A5A78;'>Pemodelan Persamaan<br>Diferensial</span><br><br>
+    <span style='color:#8AABB8;'>● Albert Rafael Turnip</span><br>
+    <span style='color:#1A4060;'>  4243540002</span><br><br>
+    <span style='color:#8AABB8;'>● Apriyani Simbolon</span><br>
+    <span style='color:#1A4060;'>  4242240005</span>
+    </div>
     </div>
     """, unsafe_allow_html=True)
 
 # ── HERO BANNER ──────────────────────────────────────────────
 st.markdown("""
 <div class="hero">
-  <div class="hero-title">🌊 Animasi ODE — Pertumbuhan Penduduk Kota Tual</div>
-  <div class="hero-sub">Pemodelan matematika berbasis persamaan diferensial orde pertama (ODE) dengan<br>
-  model eksponensial &amp; logistik · Data BPS Maluku 2020–2024 · Prediksi 2026–2030</div>
-  <span class="badge">dP/dt = k·P</span>
-  <span class="badge">dP/dt = k·P·(1−P/K)</span>
-  <span class="badge">P(t) = P₀e^(kt)</span>
-  <span class="badge">Euler &amp; RK4</span>
-  <span class="badge">Referensi: JIMAT 2025</span>
-  <div style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(99,179,237,0.2);">
-    <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#68D391;letter-spacing:1px;text-transform:uppercase;">
-      📚 Kelompok 5 · Tugas Project Persamaan Diferensial · Pemodelan Persamaan Diferensial
-    </span><br>
-    <span style="font-family:'Inter',sans-serif;font-size:13px;color:#A0AEC0;margin-top:6px;display:inline-block;">
-      <span style="color:#F6AD55">👤</span>
-      <span style="color:#E2E8F0;font-weight:500;">Albert Rafael Turnip</span>
-      <span style="color:#718096;font-family:'JetBrains Mono',monospace;font-size:11px;"> — 4243540002</span>
-      &nbsp;&nbsp;
-      <span style="color:#F6AD55">👤</span>
-      <span style="color:#E2E8F0;font-weight:500;">Apriyani Simbolon</span>
-      <span style="color:#718096;font-family:'JetBrains Mono',monospace;font-size:11px;"> — 4242240005</span>
-    </span>
+  <div class="hero-eyebrow">📐 Tugas Project · Persamaan Diferensial · Kelompok 5</div>
+  <div class="hero-title">Pemodelan <span>Pertumbuhan Penduduk</span><br>Kota Tual 2026–2030</div>
+  <div class="hero-sub">
+    Aplikasi persamaan diferensial orde pertama dengan model eksponensial &amp; logistik ·
+    Data BPS Maluku 2020–2024 · Referensi: Armin &amp; Remetwa, JIMAT Vol.6 No.1, 2025
+  </div>
+  <div>
+    <span class="badge">dP/dt = k·P</span>
+    <span class="badge">dP/dt = k·P·(1−P/K)</span>
+    <span class="badge">P(t) = P₀·e^(kt)</span>
+    <span class="badge">Euler &amp; RK4</span>
+    <span class="badge badge-green">k = 1.22%/thn</span>
+    <span class="badge badge-green">JIMAT 2025</span>
+  </div>
+  <div class="hero-team">
+    <div class="hero-team-label">Kelompok 5</div>
+    <div class="hero-member">
+      <div class="hero-member-dot"></div>
+      <div>
+        <div class="hero-member-name">Albert Rafael Turnip</div>
+        <div class="hero-member-nim">NIM · 4243540002</div>
+      </div>
+    </div>
+    <div class="hero-member">
+      <div class="hero-member-dot" style="background:#52B788;"></div>
+      <div>
+        <div class="hero-member-name">Apriyani Simbolon</div>
+        <div class="hero-member-nim">NIM · 4242240005</div>
+      </div>
+    </div>
   </div>
 </div>
 """, unsafe_allow_html=True)
@@ -386,13 +623,14 @@ c6.metric("MAPE Logistik", f"{mape(POP_AKTUAL, pred_l_h):.3f}%")
 st.markdown("---")
 
 # ── TABS ─────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
     "🎬  Animasi Utama",
-    "🌀  Animasi Phase Portrait",
-    "⚙️  Animasi Numerik",
-    "🔬  Sensitivitas Dinamis",
+    "🌀  Phase Portrait",
+    "⚙️  Metode Numerik",
+    "🔬  Sensitivitas",
     "📊  Tabel & Validasi",
     "📐  Derivasi ODE",
+    "📖  Ringkasan Jurnal",
 ])
 
 
@@ -1120,3 +1358,274 @@ with tab6:
         connector_line_color="rgba(255,255,255,0.2)",
     ))
     st.plotly_chart(fig6, use_container_width=True)
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║  TAB 7 — RINGKASAN JURNAL INTERAKTIF                       ║
+# ╚══════════════════════════════════════════════════════════════╝
+with tab7:
+    st.markdown('<div class="section-label">📖 Ringkasan jurnal referensi — Armin & Remetwa, JIMAT 2025</div>',
+                unsafe_allow_html=True)
+
+    # ── HEADER JURNAL ──
+    st.markdown("""
+    <div style="background:linear-gradient(135deg,#040E1C,#071828);border:1px solid rgba(0,140,255,0.2);
+    border-radius:10px;padding:24px 28px;margin-bottom:20px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;
+      background:linear-gradient(90deg,transparent,#0096C7,#48CAE4,transparent);"></div>
+      <div style="font-family:'Space Mono',monospace;font-size:9px;color:#0096C7;letter-spacing:2px;margin-bottom:8px;">
+        JIMAT · Vol.6 No.1 · Juni 2025 · e-ISSN: 2774-1729
+      </div>
+      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:#C8DDE8;
+      line-height:1.4;margin-bottom:10px;">
+        Aplikasi Persamaan Differensial Dengan Pendekatan Model Pertumbuhan Eksponensial<br>
+        Untuk Memprediksi Jumlah Penduduk Kota Tual Tahun 2026–2030
+      </div>
+      <div style="font-family:'DM Sans',sans-serif;font-size:12.5px;color:#3A6A88;">
+        <b style="color:#48CAE4;">Armin</b> · Politeknik Perikanan Negeri Tual (Teknologi Kelautan)
+        &nbsp;|&nbsp;
+        <b style="color:#52B788;">Michael Gerits Kriswanto Remetwa</b> · Politeknik Perikanan Negeri Tual (Agrowisata Bahari)
+      </div>
+      <div style="margin-top:12px;">
+        <span style="font-family:'Space Mono',monospace;font-size:9px;color:#2A5A78;background:rgba(0,150,199,0.08);
+        border:1px solid rgba(0,150,199,0.15);border-radius:3px;padding:3px 8px;margin-right:6px;">
+          DOI: 10.63976/jimat.v6i1.804
+        </span>
+        <span style="font-family:'Space Mono',monospace;font-size:9px;color:#2A5A78;background:rgba(82,183,136,0.08);
+        border:1px solid rgba(82,183,136,0.15);border-radius:3px;padding:3px 8px;">
+          Halaman 327–338
+        </span>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # ── POIN-POIN KUNCI ──
+    col_j1, col_j2 = st.columns(2)
+
+    with col_j1:
+        st.markdown("""
+        <div class="jurnal-highlight">
+          <div class="jurnal-num">01</div>
+          <div class="jurnal-title">Latar Belakang & Tujuan</div>
+          <div class="jurnal-body">
+            Kota Tual sebagai kota persinggahan wilayah Maluku Tenggara belum memiliki proyeksi
+            penduduk resmi. Penelitian ini bertujuan memprediksi jumlah penduduk 2026–2030
+            menggunakan persamaan diferensial dengan asumsi pertumbuhan eksponensial —
+            model yang cocok untuk prediksi <b style="color:#48CAE4">jangka pendek dengan sumber daya besar</b>.
+          </div>
+          <span class="jurnal-stat">🎯 Prediksi jangka pendek</span>
+          <span class="jurnal-stat">📍 Kota Tual, Maluku</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("""
+        <div class="jurnal-highlight" style="margin-top:12px;">
+          <div class="jurnal-num">03</div>
+          <div class="jurnal-title">Perhitungan Laju Pertumbuhan k</div>
+          <div class="jurnal-body">
+            Menggunakan data P₀ = 88.280 jiwa (2020) dan P(t) = 92.744 jiwa (2024), t = 4 tahun:<br><br>
+            <code style="font-family:'Space Mono',monospace;color:#48CAE4;font-size:11px;">
+              k = (1/4) · ln(92.744 / 88.280)<br>
+              k = (1/4) · ln(1,0505)<br>
+              k = (1/4) · 0,0488 = <b>0,0122</b>
+            </code>
+          </div>
+          <span class="jurnal-stat">📈 k = 0.0122</span>
+          <span class="jurnal-stat" style="color:#52B788;border-color:rgba(82,183,136,0.2);">1.22% / tahun</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col_j2:
+        st.markdown("""
+        <div class="jurnal-highlight">
+          <div class="jurnal-num">02</div>
+          <div class="jurnal-title">Data & Metode</div>
+          <div class="jurnal-body">
+            Data sekunder dari <b style="color:#48CAE4">BPS Provinsi Maluku</b> tahun 2020–2024.
+            Jenis penelitian: kuantitatif deskriptif. Model matematika persamaan diferensial:<br><br>
+            <code style="font-family:'Space Mono',monospace;color:#48CAE4;font-size:11px;">
+              dP/P = k dt &nbsp;→&nbsp; P(t) = P₀·e^(kt)
+            </code>
+          </div>
+          <span class="jurnal-stat">🏛 BPS Maluku 2020–2024</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("""
+        <div class="jurnal-highlight" style="margin-top:12px;">
+          <div class="jurnal-num">04</div>
+          <div class="jurnal-title">Hasil Prediksi Utama</div>
+          <div class="jurnal-body">
+            Dengan P₀ = 92.744 jiwa (2024) dan k = 0,0122, prediksi jumlah penduduk:
+          </div>
+        """, unsafe_allow_html=True)
+
+        # Tabel mini hasil jurnal
+        df_j = pd.DataFrame({
+            "Tahun": [2026, 2027, 2028, 2029, 2030],
+            "Jiwa":  [95035, 96176, 97381, 98587, 99793],
+            "Tambah": ["+2.291", "+1.141", "+1.205", "+1.206", "+1.206"],
+        })
+        st.dataframe(
+            df_j.style
+                .format({"Jiwa": "{:,}"})
+                .set_properties(**{"font-family": "Space Mono, monospace", "font-size": "11px"}),
+            hide_index=True,
+            use_container_width=True,
+            height=215,
+        )
+        st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<hr class='premium-divider'>", unsafe_allow_html=True)
+
+    # ── INSIGHT & REKOMENDASI ──
+    col_j3, col_j4, col_j5 = st.columns(3)
+
+    with col_j3:
+        st.markdown("""
+        <div class="jurnal-highlight">
+          <div class="jurnal-num">05</div>
+          <div class="jurnal-title">Temuan Kunci</div>
+          <div class="jurnal-body">
+            Selama 6 tahun (2024–2030) penduduk Kota Tual diproyeksikan bertambah
+            <b style="color:#48CAE4;">7.049 jiwa</b> — dari 92.744 menjadi 99.793 jiwa,
+            dengan tren positif yang konsisten dan laju 1,22% per tahun.
+          </div>
+          <span class="jurnal-stat">+7.049 jiwa total</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col_j4:
+        st.markdown("""
+        <div class="jurnal-highlight">
+          <div class="jurnal-num">06</div>
+          <div class="jurnal-title">Batasan Model</div>
+          <div class="jurnal-body">
+            Model eksponensial <b style="color:#F4A261;">hanya disarankan jangka pendek</b>.
+            Untuk jangka panjang disarankan model logistik yang mempertimbangkan:
+            daya dukung lingkungan (K), migrasi, dan kebijakan pemerintah.
+          </div>
+          <span class="jurnal-stat" style="color:#F4A261;border-color:rgba(244,162,97,0.2);">⚠ Jangka pendek saja</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col_j5:
+        st.markdown("""
+        <div class="jurnal-highlight">
+          <div class="jurnal-num">07</div>
+          <div class="jurnal-title">Rekomendasi Kebijakan</div>
+          <div class="jurnal-body">
+            Hasil penelitian ini menjadi acuan untuk:
+            pengendalian laju pertumbuhan berbasis data,
+            optimalisasi tata ruang, perencanaan infrastruktur,
+            dan strategi sosio-ekonomi jangka pendek pemerintah Kota Tual.
+          </div>
+          <span class="jurnal-stat" style="color:#52B788;border-color:rgba(82,183,136,0.2);">🏛 Kebijakan publik</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown("<hr class='premium-divider'>", unsafe_allow_html=True)
+
+    # ── VISUALISASI RINGKASAN JURNAL ──
+    st.markdown('<div class="section-label">Visualisasi ringkasan: perbandingan data aktual vs prediksi jurnal</div>',
+                unsafe_allow_html=True)
+
+    all_y = np.concatenate([TAHUN_HIST, TAHUN_PRED])
+    all_p_jurnal = np.concatenate([POP_AKTUAL, POP_JURNAL])
+    all_p_model  = np.concatenate([
+        sol_exp(TAHUN_HIST - TAHUN_HIST[0], P0_HIST, K_JURNAL),
+        sol_exp(TAHUN_PRED - 2024, P0_PRED, K_JURNAL)
+    ])
+
+    fig_j = go.Figure(layout=make_layout(
+        title=dict(text="Data BPS 2020–2024 + Prediksi Jurnal 2026–2030 · Kota Tual",
+                   font=dict(size=14, color=WHITE, family="Syne, sans-serif"), x=0.01),
+        xaxis=dict(title="Tahun", dtick=1, gridcolor="rgba(0,140,255,0.06)"),
+        yaxis=dict(title="Jumlah Penduduk (jiwa)", tickformat=",d",
+                   gridcolor="rgba(0,140,255,0.06)"),
+        height=400,
+        shapes=[dict(
+            type="rect", x0=2024.5, x1=2030.5,
+            y0=0, y1=1, yref="paper",
+            fillcolor="rgba(72,202,228,0.03)",
+            line=dict(color="rgba(0,0,0,0)")
+        )],
+        annotations=[dict(
+            x=2027, y=1, yref="paper",
+            text="ZONA PREDIKSI",
+            showarrow=False,
+            font=dict(family="Space Mono, monospace", size=9,
+                      color="rgba(72,202,228,0.3)"),
+            yshift=-12
+        )]
+    ))
+
+    # Shaded area antara aktual dan model
+    fig_j.add_trace(go.Scatter(
+        x=np.concatenate([TAHUN_HIST, TAHUN_HIST[::-1]]),
+        y=np.concatenate([POP_AKTUAL, sol_exp(TAHUN_HIST[::-1]-TAHUN_HIST[0], P0_HIST, K_JURNAL)]),
+        fill="toself",
+        fillcolor="rgba(72,202,228,0.05)",
+        line=dict(color="rgba(0,0,0,0)"),
+        showlegend=False, name=""
+    ))
+
+    fig_j.add_trace(go.Scatter(
+        x=all_y, y=all_p_model, mode="lines",
+        name="Model P(t)=P₀·e^(kt)",
+        line=dict(color=CYAN, width=2.5),
+    ))
+    fig_j.add_trace(go.Scatter(
+        x=TAHUN_HIST, y=POP_AKTUAL, mode="markers+lines",
+        name="Data Aktual BPS",
+        marker=dict(color=AMBER, size=11, symbol="circle",
+                    line=dict(color=WHITE, width=1.5)),
+        line=dict(color=AMBER, width=1.5, dash="dot"),
+    ))
+    fig_j.add_trace(go.Scatter(
+        x=TAHUN_PRED, y=POP_JURNAL, mode="markers+lines",
+        name="Prediksi Jurnal (k=0.0122)",
+        marker=dict(color=GREEN, size=11, symbol="diamond",
+                    line=dict(color=WHITE, width=1.5)),
+        line=dict(color=GREEN, width=2),
+    ))
+
+    for yr, pop in zip(TAHUN_PRED, POP_JURNAL):
+        fig_j.add_annotation(
+            x=yr, y=pop, text=f"{pop:,}",
+            showarrow=False, yshift=18,
+            font=dict(color=GREEN, size=9, family="Space Mono, monospace"),
+            bgcolor="rgba(4,12,24,0.8)", borderpad=3
+        )
+    for yr, pop in zip(TAHUN_HIST, POP_AKTUAL):
+        fig_j.add_annotation(
+            x=yr, y=pop, text=f"{int(pop):,}",
+            showarrow=False, yshift=-22,
+            font=dict(color=AMBER, size=9, family="Space Mono, monospace"),
+            bgcolor="rgba(4,12,24,0.8)", borderpad=3
+        )
+
+    fig_j.add_vline(x=2024, line_dash="dash", line_color=AMBER,
+                    line_width=1, opacity=0.4,
+                    annotation_text="2024 · Batas Prediksi",
+                    annotation_font_color=AMBER,
+                    annotation_font_size=10)
+
+    st.plotly_chart(fig_j, use_container_width=True)
+
+    # ── ABSTRACT BOX ──
+    st.markdown('<div class="section-label">Abstrak jurnal</div>', unsafe_allow_html=True)
+    st.markdown("""
+    <div style="background:#040C18;border:1px solid rgba(0,140,255,0.15);border-radius:8px;
+    padding:20px 26px;font-size:12.5px;color:#5A8099;line-height:1.9;font-family:'DM Sans',sans-serif;">
+      <span style="font-family:'Syne',sans-serif;font-weight:700;color:#48CAE4;font-size:13px;">Abstrak · </span>
+      Pertumbuhan penduduk merupakan faktor penting dalam perencanaan pembangunan suatu wilayah.
+      Penelitian ini bertujuan memprediksi jumlah penduduk Kota Tual pada tahun 2026–2030
+      menggunakan persamaan diferensial dengan asumsi model tumbuh secara eksponensial.
+      Data bersumber dari BPS Provinsi Maluku tahun 2020–2024.
+      Diperoleh laju pertumbuhan sebesar <b style="color:#48CAE4;">1,22% per tahun</b>.
+      Diperkirakan penduduk akan bertambah <b style="color:#52B788;">7.049 jiwa</b> selama 6 tahun —
+      dari <b style="color:#C8DDE8;">92.744 jiwa (2024)</b> menjadi <b style="color:#C8DDE8;">99.793 jiwa (2030)</b>.
+      Rekomendasi: perlunya pengendalian laju pertumbuhan melalui kebijakan kependudukan berbasis data
+      serta optimalisasi tata ruang dan infrastruktur.
+    </div>
+    """, unsafe_allow_html=True)
