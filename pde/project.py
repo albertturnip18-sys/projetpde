@@ -785,7 +785,7 @@ with tab3:
     })
     st.dataframe(df_err.style.format({
         c: "{:,}" for c in df_err.columns[1:]
-    }).background_gradient(subset=["Error Euler", "Error RK4"], cmap="Reds"),
+    }),
     hide_index=True, use_container_width=True)
 
 
@@ -928,7 +928,7 @@ with tab5:
             "Jurnal (jiwa)":  "{:,}",
             "Deviasi (jiwa)": "{:+,}",
             "Deviasi (%)":    "{:+.4f}%",
-        }).background_gradient(subset=["Deviasi (%)"], cmap="RdYlGn_r"),
+        }),
         hide_index=True, use_container_width=True)
 
     st.markdown("---")
@@ -1069,7 +1069,7 @@ with tab6:
         "Nilai Jurnal":    "{:,}",
         "Selisih vs Jrn":  "{:+,}",
         "Pertambahan":     "{:+,}",
-    }).background_gradient(subset=["Selisih vs Jrn"], cmap="RdYlGn_r"),
+    }),
     hide_index=True, use_container_width=True)
 
     st.markdown('<div class="section-label">Waterfall — pertambahan penduduk per tahun</div>',
