@@ -181,15 +181,21 @@ div.stButton > button:hover {
 """, unsafe_allow_html=True)
 
 # ── PLOTLY DARK TEMPLATE (FIX: gunakan dict biasa, bukan go.Layout) ──
-# xaxis & yaxis SENGAJA dihapus dari template karena setiap chart
-# mendefinisikannya sendiri — jika keduanya ada di template DAN di go.Layout(),
-# Plotly akan raise "multiple values for keyword argument 'xaxis'".
-# Hanya properti GLOBAL (bgcolor, font, legend, margin) yang aman di template.
 PLOTLY_TEMPLATE = dict(
     layout=dict(
         paper_bgcolor="#080C14",
         plot_bgcolor="#0D1523",
         font=dict(family="Inter, sans-serif", color="#A0AEC0", size=12),
+        xaxis=dict(
+            gridcolor="rgba(255,255,255,0.05)",
+            linecolor="rgba(255,255,255,0.1)",
+            zerolinecolor="rgba(255,255,255,0.08)"
+        ),
+        yaxis=dict(
+            gridcolor="rgba(255,255,255,0.05)",
+            linecolor="rgba(255,255,255,0.1)",
+            zerolinecolor="rgba(255,255,255,0.08)"
+        ),
         legend=dict(
             bgcolor="rgba(13,27,46,0.85)",
             bordercolor="rgba(99,179,237,0.2)",
@@ -199,6 +205,18 @@ PLOTLY_TEMPLATE = dict(
         margin=dict(l=60, r=30, t=50, b=50),
     )
 )
+
+def make_layout(**kwargs):
+    """Merge kwargs into PLOTLY_TEMPLATE['layout'], deep-merging any dict keys that clash."""
+    base = dict(PLOTLY_TEMPLATE["layout"])
+    # Deep-merge any key that exists in both base and kwargs and both are dicts
+    for key in list(kwargs.keys()):
+        if key in base and isinstance(base[key], dict) and isinstance(kwargs[key], dict):
+            merged = dict(base.pop(key))
+            merged.update(kwargs.pop(key))
+            kwargs[key] = merged
+    base.update(kwargs)
+    return go.Layout(**base)
 
 CYAN   = "#63B3ED"
 TEAL   = "#76E4F7"
@@ -439,8 +457,7 @@ with tab1:
                        showlegend=False),
         ],
         frames=frames,
-        layout=go.Layout(
-            **PLOTLY_TEMPLATE["layout"],
+        layout=make_layout(
             title=dict(text="Kurva Pertumbuhan Penduduk Kota Tual (2020–2035)",
                        font=dict(size=15, color=WHITE), x=0.01),
             xaxis=dict(title="Tahun", range=[2019, 2036],
@@ -590,8 +607,7 @@ with tab2:
                                    line=dict(color=WHITE, width=2)), name="Posisi Log."),
         ],
         frames=frames_ph,
-        layout=go.Layout(
-            **PLOTLY_TEMPLATE["layout"],
+        layout=make_layout(
             title=dict(text="Phase Portrait: dP/dt vs P — Gerak Sistem ODE",
                        font=dict(size=15, color=WHITE), x=0.01),
             xaxis=dict(title="Populasi P (jiwa)", tickformat=",d",
@@ -711,8 +727,7 @@ with tab3:
                        line=dict(color="transparent"), name="Error Euler"),
         ],
         frames=frames_num,
-        layout=go.Layout(
-            **PLOTLY_TEMPLATE["layout"],
+        layout=make_layout(
             title=dict(text=f"Konvergensi Numerik ODE — Analitik vs Euler vs RK4 (Δt={dt_val})",
                        font=dict(size=15, color=WHITE), x=0.01),
             xaxis=dict(title="Waktu t (tahun dari 2020)", range=[-0.2, 10.5],
@@ -790,8 +805,7 @@ with tab4:
         t_s      = np.linspace(0, 10, 300)
         yr_s     = 2024 + t_s
 
-        fig4a = go.Figure(layout=go.Layout(
-            **PLOTLY_TEMPLATE["layout"],
+        fig4a = go.Figure(layout=make_layout(
             title=dict(text="Sensitivitas k — Eksponensial",
                        font=dict(size=14, color=WHITE), x=0.01),
             xaxis=dict(title="Tahun", gridcolor="rgba(255,255,255,0.05)"),
@@ -824,8 +838,7 @@ with tab4:
         K_vals   = [110000, 130000, 150000, 175000, 200000, 250000]
         colors_K = px.colors.sequential.Viridis[::2][:len(K_vals)]
 
-        fig4b = go.Figure(layout=go.Layout(
-            **PLOTLY_TEMPLATE["layout"],
+        fig4b = go.Figure(layout=make_layout(
             title=dict(text="Sensitivitas K — Logistik",
                        font=dict(size=14, color=WHITE), x=0.01),
             xaxis=dict(title="Tahun", gridcolor="rgba(255,255,255,0.05)"),
@@ -852,8 +865,7 @@ with tab4:
         pred = sol_exp(t_rel_h, P0_HIST, kk)
         mape_grid.append(mape(POP_AKTUAL, pred))
 
-    fig4c = go.Figure(layout=go.Layout(
-        **PLOTLY_TEMPLATE["layout"],
+    fig4c = go.Figure(layout=make_layout(
         title=dict(text="MAPE Model Eksponensial sebagai Fungsi k",
                    font=dict(size=14, color=WHITE), x=0.01),
         xaxis=dict(title="Laju Pertumbuhan k", gridcolor="rgba(255,255,255,0.05)"),
@@ -944,8 +956,7 @@ with tab5:
     p_e_pr = sol_exp(t_pr2, P0_PRED, k_val).astype(int)
     p_l_pr = sol_log(t_pr2, P0_PRED, k_val, K_val).astype(int)
 
-    fig5 = go.Figure(layout=go.Layout(
-        **PLOTLY_TEMPLATE["layout"],
+    fig5 = go.Figure(layout=make_layout(
         title=dict(text="Prediksi Jumlah Penduduk Kota Tual 2026–2030",
                    font=dict(size=15, color=WHITE), x=0.01),
         xaxis=dict(title="Tahun", gridcolor="rgba(255,255,255,0.05)"),
@@ -1067,8 +1078,7 @@ with tab6:
     all_years  = np.concatenate([[2024], TAHUN_PRED])
     all_pop    = np.concatenate([[P0_PRED], POP_JURNAL])
 
-    fig6 = go.Figure(layout=go.Layout(
-        **PLOTLY_TEMPLATE["layout"],
+    fig6 = go.Figure(layout=make_layout(
         title=dict(text="Pertambahan Penduduk Kota Tual per Tahun (Jurnal)",
                    font=dict(size=15, color=WHITE), x=0.01),
         height=360,
