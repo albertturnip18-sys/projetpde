@@ -708,7 +708,7 @@ with tab3:
                 x=np.concatenate([t_e_s, t_e_s[::-1]]),
                 y=np.concatenate([P_e_s + err_e, (P_e_s - err_e)[::-1]]),
                 fill="toself", fillcolor="rgba(252,129,129,0.08)",
-                line=dict(color="transparent"), name="Error Euler", showlegend=True
+                line=dict(color="rgba(0,0,0,0)"), name="Error Euler", showlegend=True
             ),
         ], name=str(idx)))
 
@@ -724,7 +724,7 @@ with tab3:
                        marker=dict(size=5, color=PURPLE)),
             go.Scatter(x=[], y=[], fill="toself",
                        fillcolor="rgba(252,129,129,0.08)",
-                       line=dict(color="transparent"), name="Error Euler"),
+                       line=dict(color="rgba(0,0,0,0)"), name="Error Euler"),
         ],
         frames=frames_num,
         layout=make_layout(
