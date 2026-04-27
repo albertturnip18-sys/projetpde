@@ -181,21 +181,15 @@ div.stButton > button:hover {
 """, unsafe_allow_html=True)
 
 # ── PLOTLY DARK TEMPLATE (FIX: gunakan dict biasa, bukan go.Layout) ──
+# xaxis & yaxis SENGAJA dihapus dari template karena setiap chart
+# mendefinisikannya sendiri — jika keduanya ada di template DAN di go.Layout(),
+# Plotly akan raise "multiple values for keyword argument 'xaxis'".
+# Hanya properti GLOBAL (bgcolor, font, legend, margin) yang aman di template.
 PLOTLY_TEMPLATE = dict(
     layout=dict(
         paper_bgcolor="#080C14",
         plot_bgcolor="#0D1523",
         font=dict(family="Inter, sans-serif", color="#A0AEC0", size=12),
-        xaxis=dict(
-            gridcolor="rgba(255,255,255,0.05)",
-            linecolor="rgba(255,255,255,0.1)",
-            zerolinecolor="rgba(255,255,255,0.08)"
-        ),
-        yaxis=dict(
-            gridcolor="rgba(255,255,255,0.05)",
-            linecolor="rgba(255,255,255,0.1)",
-            zerolinecolor="rgba(255,255,255,0.08)"
-        ),
         legend=dict(
             bgcolor="rgba(13,27,46,0.85)",
             bordercolor="rgba(99,179,237,0.2)",
