@@ -35,21 +35,21 @@ html, body, [class*="css"] {
     font-family: 'DM Sans', sans-serif;
 }
 .stApp {
-    background: #1B6CA8;
-    color: #E8F6FF;
+    background: #D6EAF8;
+    color: #1B2631;
     background-image:
-        radial-gradient(ellipse 80% 50% at 10% 0%, rgba(255,255,255,0.12) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 40% at 90% 100%, rgba(45,212,191,0.10) 0%, transparent 60%);
+        radial-gradient(ellipse 80% 50% at 10% 0%, rgba(41,128,185,0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 90% 100%, rgba(26,188,156,0.07) 0%, transparent 60%);
 }
 
 /* ── SIDEBAR ── */
 [data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #071F20 0%, #051A1B 100%);
-    border-right: 1px solid rgba(45,212,191,0.18);
+    background: linear-gradient(180deg, #1A5276 0%, #154360 100%);
+    border-right: 1px solid rgba(41,128,185,0.30);
 }
-[data-testid="stSidebar"] * { color: #A7F3D0 !important; }
+[data-testid="stSidebar"] * { color: #D6EAF8 !important; }
 [data-testid="stSidebar"] .stSlider > div > div > div {
-    background: linear-gradient(90deg, #14B8A6, #22D3EE) !important;
+    background: linear-gradient(90deg, #2980B9, #1ABC9C) !important;
     border-radius: 4px !important;
 }
 [data-testid="stSidebar"] .stSlider [data-baseweb="slider"] { padding: 4px 0 !important; }
@@ -61,42 +61,41 @@ html, body, [class*="css"] {
 
 /* ── METRIC CARDS ── */
 [data-testid="metric-container"] {
-    background: linear-gradient(145deg, #0A2828 0%, #0D3030 100%);
-    border: 1px solid rgba(45,212,191,0.18);
-    border-top: 2px solid rgba(45,212,191,0.55);
+    background: linear-gradient(145deg, #FFFFFF 0%, #EBF5FB 100%);
+    border: 1px solid rgba(41,128,185,0.20);
+    border-top: 2px solid rgba(41,128,185,0.60);
     border-radius: 10px;
     padding: 18px 20px 14px 20px;
     transition: border-color 0.3s ease;
-    box-shadow: 0 2px 12px rgba(20,184,166,0.12);
 }
 [data-testid="metric-container"]:hover {
-    border-color: rgba(45,212,191,0.50) !important;
-    border-top-color: rgba(34,211,238,0.7) !important;
+    border-color: rgba(41,128,185,0.50) !important;
+    border-top-color: rgba(26,188,156,0.70) !important;
 }
 [data-testid="metric-container"] label {
-    color: #5EEAD4 !important;
+    color: #5D8AA8 !important;
     font-family: 'Space Mono', monospace !important;
     font-size: 9px !important;
     letter-spacing: 2px;
     text-transform: uppercase;
 }
 [data-testid="metric-container"] [data-testid="stMetricValue"] {
-    color: #2DD4BF !important;
+    color: #2980B9 !important;
     font-family: 'Syne', sans-serif !important;
     font-size: 21px !important;
     font-weight: 700 !important;
     letter-spacing: -0.5px;
 }
 [data-testid="metric-container"] [data-testid="stMetricDelta"] {
-    color: #34D399 !important;
+    color: #1ABC9C !important;
     font-family: 'Space Mono', monospace !important;
     font-size: 10px !important;
 }
 
 /* ── TABS ── */
 .stTabs [data-baseweb="tab-list"] {
-    background: rgba(5,31,32,0.95) !important;
-    border-bottom: 1px solid rgba(45,212,191,0.18) !important;
+    background: rgba(214,234,248,0.85) !important;
+    border-bottom: 1px solid rgba(41,128,185,0.20) !important;
     gap: 2px !important;
     padding: 0 4px !important;
 }
@@ -104,27 +103,27 @@ html, body, [class*="css"] {
     font-family: 'Syne', sans-serif !important;
     font-size: 12px !important;
     font-weight: 600 !important;
-    color: #3D7A75 !important;
+    color: #5D8AA8 !important;
     letter-spacing: 0.3px;
     border-radius: 6px 6px 0 0 !important;
     padding: 10px 16px !important;
     transition: color 0.2s ease !important;
 }
 .stTabs [data-testid="stTab"] button[aria-selected="true"] {
-    color: #2DD4BF !important;
-    border-bottom: 2px solid #2DD4BF !important;
-    background: rgba(45,212,191,0.08) !important;
+    color: #2980B9 !important;
+    border-bottom: 2px solid #2980B9 !important;
+    background: rgba(41,128,185,0.10) !important;
 }
 .stTabs [data-testid="stTab"] button:hover {
-    color: #5EEAD4 !important;
-    background: rgba(45,212,191,0.05) !important;
+    color: #1A5276 !important;
+    background: rgba(41,128,185,0.07) !important;
 }
 
 /* ── BUTTONS ── */
 div.stButton > button {
     background: transparent !important;
-    color: #2DD4BF !important;
-    border: 1px solid rgba(45,212,191,0.45) !important;
+    color: #2980B9 !important;
+    border: 1px solid rgba(41,128,185,0.45) !important;
     border-radius: 6px !important;
     font-family: 'Space Mono', monospace !important;
     font-size: 11px !important;
@@ -133,41 +132,40 @@ div.stButton > button {
     transition: all 0.2s ease !important;
 }
 div.stButton > button:hover {
-    background: rgba(45,212,191,0.10) !important;
-    border-color: #2DD4BF !important;
-    box-shadow: 0 0 18px rgba(45,212,191,0.25) !important;
+    background: rgba(41,128,185,0.12) !important;
+    border-color: #2980B9 !important;
+    box-shadow: 0 0 14px rgba(41,128,185,0.25) !important;
 }
 
 /* ── HERO PREMIUM ── */
 .hero {
-    background: linear-gradient(135deg, #071F22 0%, #0A2B2C 60%, #082820 100%);
-    border: 1px solid rgba(45,212,191,0.22);
+    background: linear-gradient(135deg, #FFFFFF 0%, #EBF5FB 60%, #D6EAF8 100%);
+    border: 1px solid rgba(41,128,185,0.25);
     border-radius: 14px;
     padding: 36px 44px;
     margin-bottom: 28px;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 4px 24px rgba(45,212,191,0.08);
 }
 .hero::before {
     content: '';
     position: absolute;
-    top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, #14B8A6 0%, #22D3EE 35%, #34D399 65%, #FBBF24 100%);
+    top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent 0%, #2980B9 25%, #5DADE2 50%, #1ABC9C 75%, transparent 100%);
 }
 .hero::after {
     content: '';
     position: absolute;
     top: -80px; right: -80px;
     width: 280px; height: 280px;
-    background: radial-gradient(circle, rgba(45,212,191,0.08) 0%, transparent 65%);
+    background: radial-gradient(circle, rgba(41,128,185,0.12) 0%, transparent 65%);
     border-radius: 50%;
     pointer-events: none;
 }
 .hero-eyebrow {
     font-family: 'Space Mono', monospace;
     font-size: 9px;
-    color: #2DD4BF;
+    color: #2980B9;
     letter-spacing: 3px;
     text-transform: uppercase;
     margin: 0 0 12px 0;
@@ -176,15 +174,15 @@ div.stButton > button:hover {
     font-family: 'Syne', sans-serif;
     font-size: 30px;
     font-weight: 800;
-    color: #E2F8F5;
+    color: #1B2631;
     margin: 0 0 10px 0;
     letter-spacing: -1px;
     line-height: 1.15;
 }
-.hero-title span { color: #2DD4BF; }
+.hero-title span { color: #2980B9; }
 .hero-sub {
     font-size: 13.5px;
-    color: #5EADA8;
+    color: #5D8AA8;
     margin: 0 0 20px 0;
     line-height: 1.7;
     max-width: 680px;
@@ -192,26 +190,26 @@ div.stButton > button:hover {
 .badge {
     display: inline-flex;
     align-items: center;
-    background: rgba(45,212,191,0.08);
-    border: 1px solid rgba(99,102,241,0.28);
+    background: rgba(41,128,185,0.10);
+    border: 1px solid rgba(41,128,185,0.28);
     border-radius: 4px;
     padding: 3px 10px;
     font-family: 'Space Mono', monospace;
     font-size: 9px;
-    color: #2DD4BF;
+    color: #2980B9;
     margin-right: 6px;
     margin-top: 4px;
     letter-spacing: 0.5px;
 }
 .badge-green {
-    background: rgba(52,211,153,0.10);
-    border-color: rgba(52,211,153,0.28);
-    color: #34D399;
+    background: rgba(26,188,156,0.10);
+    border-color: rgba(26,188,156,0.28);
+    color: #1ABC9C;
 }
 .hero-team {
     margin-top: 20px;
     padding-top: 16px;
-    border-top: 1px solid rgba(45,212,191,0.15);
+    border-top: 1px solid rgba(41,128,185,0.18);
     display: flex;
     align-items: center;
     gap: 24px;
@@ -220,7 +218,7 @@ div.stButton > button:hover {
 .hero-team-label {
     font-family: 'Space Mono', monospace;
     font-size: 9px;
-    color: #3D7A75;
+    color: #5D8AA8;
     letter-spacing: 2px;
     text-transform: uppercase;
 }
@@ -232,19 +230,19 @@ div.stButton > button:hover {
 .hero-member-dot {
     width: 6px; height: 6px;
     border-radius: 50%;
-    background: #2DD4BF;
+    background: #2980B9;
     flex-shrink: 0;
 }
 .hero-member-name {
     font-family: 'DM Sans', sans-serif;
     font-size: 13px;
     font-weight: 500;
-    color: #C8F7F0;
+    color: #1B2631;
 }
 .hero-member-nim {
     font-family: 'Space Mono', monospace;
     font-size: 9px;
-    color: #3D7A75;
+    color: #5D8AA8;
     margin-top: 1px;
 }
 
@@ -252,12 +250,12 @@ div.stButton > button:hover {
 .section-label {
     font-family: 'Space Mono', monospace;
     font-size: 9px;
-    color: #2DD4BF;
+    color: #2980B9;
     letter-spacing: 2.5px;
     text-transform: uppercase;
     margin-bottom: 14px;
     padding-bottom: 10px;
-    border-bottom: 1px solid rgba(45,212,191,0.15);
+    border-bottom: 1px solid rgba(41,128,185,0.18);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -266,72 +264,70 @@ div.stButton > button:hover {
     content: '';
     display: inline-block;
     width: 20px; height: 2px;
-    background: linear-gradient(90deg, #14B8A6, #22D3EE);
+    background: linear-gradient(90deg, #2980B9, #5DADE2);
     border-radius: 2px;
     flex-shrink: 0;
 }
 
 /* ── INFO CARD ── */
 .info-card {
-    background: rgba(99,102,241,0.05);
-    border: 1px solid rgba(45,212,191,0.18);
-    border-left: 2px solid #14B8A6;
+    background: rgba(41,128,185,0.06);
+    border: 1px solid rgba(41,128,185,0.18);
+    border-left: 2px solid #2980B9;
     border-radius: 0 8px 8px 0;
     padding: 14px 18px;
     font-size: 13px;
-    color: #7ECEC8;
+    color: #5D8AA8;
     line-height: 1.85;
     margin: 8px 0;
 }
 
 /* ── FORMULA BOX ── */
 .formula-box {
-    background: #0A2828;
-    border: 1px solid rgba(45,212,191,0.22);
+    background: #EBF5FB;
+    border: 1px solid rgba(41,128,185,0.25);
     border-radius: 8px;
     padding: 20px 24px;
     font-family: 'Space Mono', monospace;
     font-size: 12px;
-    color: #2DD4BF;
+    color: #1A5276;
     text-align: center;
     line-height: 2.2;
     margin: 14px 0;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 2px 12px rgba(20,184,166,0.10);
 }
 .formula-box::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(45,212,191,0.45), transparent);
+    background: linear-gradient(90deg, transparent, rgba(41,128,185,0.40), transparent);
 }
 
 /* ── JURNAL CARD ── */
 .jurnal-highlight {
-    background: linear-gradient(135deg, #071E20 0%, #0A2B2C 100%);
-    border: 1px solid rgba(45,212,191,0.18);
+    background: linear-gradient(135deg, #FFFFFF 0%, #EBF5FB 100%);
+    border: 1px solid rgba(41,128,185,0.18);
     border-radius: 10px;
     padding: 20px 24px;
     margin: 10px 0;
     position: relative;
     overflow: hidden;
     transition: border-color 0.25s ease;
-    box-shadow: 0 2px 10px rgba(20,184,166,0.10);
 }
-.jurnal-highlight:hover { border-color: rgba(45,212,191,0.45); }
+.jurnal-highlight:hover { border-color: rgba(41,128,185,0.50); }
 .jurnal-highlight::after {
     content: '';
     position: absolute;
     top: 0; left: 0; bottom: 0; width: 3px;
-    background: linear-gradient(180deg, #2DD4BF, #34D399);
+    background: linear-gradient(180deg, #2980B9, #1ABC9C);
     border-radius: 3px 0 0 3px;
 }
 .jurnal-num {
     font-family: 'Space Mono', monospace;
     font-size: 28px;
     font-weight: 700;
-    color: rgba(45,212,191,0.15);
+    color: rgba(41,128,185,0.15);
     position: absolute;
     top: 12px; right: 20px;
     line-height: 1;
@@ -341,25 +337,25 @@ div.stButton > button:hover {
     font-family: 'Syne', sans-serif;
     font-size: 14px;
     font-weight: 700;
-    color: #E2F8F5;
+    color: #1B2631;
     margin-bottom: 6px;
 }
 .jurnal-body {
     font-size: 12.5px;
-    color: #5EADA8;
+    color: #5D8AA8;
     line-height: 1.75;
 }
 .jurnal-stat {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: rgba(45,212,191,0.08);
-    border: 1px solid rgba(99,102,241,0.22);
+    background: rgba(41,128,185,0.10);
+    border: 1px solid rgba(41,128,185,0.22);
     border-radius: 4px;
     padding: 4px 10px;
     font-family: 'Space Mono', monospace;
     font-size: 10px;
-    color: #2DD4BF;
+    color: #2980B9;
     margin-top: 10px;
     margin-right: 6px;
 }
@@ -367,29 +363,29 @@ div.stButton > button:hover {
 /* ── DIVIDER ── */
 .premium-divider {
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(45,212,191,0.25), transparent);
+    background: linear-gradient(90deg, transparent, rgba(41,128,185,0.30), transparent);
     margin: 20px 0;
     border: none;
 }
 
 /* ── DATAFRAME ── */
 [data-testid="stDataFrame"] {
-    border: 1px solid rgba(45,212,191,0.18) !important;
+    border: 1px solid rgba(41,128,185,0.20) !important;
     border-radius: 8px !important;
     overflow: hidden !important;
 }
 
 /* ── SELECTBOX & RADIO ── */
 [data-baseweb="select"] {
-    background: #071E20 !important;
-    border-color: rgba(45,212,191,0.25) !important;
+    background: #FFFFFF !important;
+    border-color: rgba(41,128,185,0.25) !important;
 }
 
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: #1B6CA8; }
+::-webkit-scrollbar-track { background: #D6EAF8; }
 ::-webkit-scrollbar-thumb {
-    background: rgba(45,212,191,0.35);
+    background: rgba(41,128,185,0.40);
     border-radius: 4px;
 }
 </style>
@@ -398,32 +394,32 @@ div.stButton > button:hover {
 # ── PLOTLY PREMIUM TEMPLATE ─────────────────────────────────
 PLOTLY_TEMPLATE = dict(
     layout=dict(
-        paper_bgcolor="rgba(5,31,32,0)",
-        plot_bgcolor="#071E20",
-        font=dict(family="DM Sans, sans-serif", color="#5EADA8", size=12),
+        paper_bgcolor="rgba(214,234,248,0)",
+        plot_bgcolor="#F0F8FF",
+        font=dict(family="DM Sans, sans-serif", color="#5D8AA8", size=12),
         xaxis=dict(
-            gridcolor="rgba(45,212,191,0.08)",
-            linecolor="rgba(45,212,191,0.18)",
-            zerolinecolor="rgba(45,212,191,0.12)",
-            tickfont=dict(family="Space Mono, monospace", size=10, color="#3D7A75")
+            gridcolor="rgba(41,128,185,0.12)",
+            linecolor="rgba(41,128,185,0.20)",
+            zerolinecolor="rgba(41,128,185,0.15)",
+            tickfont=dict(family="Space Mono, monospace", size=10, color="#5D8AA8")
         ),
         yaxis=dict(
-            gridcolor="rgba(45,212,191,0.08)",
-            linecolor="rgba(45,212,191,0.18)",
-            zerolinecolor="rgba(45,212,191,0.12)",
-            tickfont=dict(family="Space Mono, monospace", size=10, color="#3D7A75")
+            gridcolor="rgba(41,128,185,0.12)",
+            linecolor="rgba(41,128,185,0.20)",
+            zerolinecolor="rgba(41,128,185,0.15)",
+            tickfont=dict(family="Space Mono, monospace", size=10, color="#5D8AA8")
         ),
         legend=dict(
-            bgcolor="rgba(7,30,32,0.95)",
-            bordercolor="rgba(45,212,191,0.20)",
+            bgcolor="rgba(235,245,251,0.97)",
+            bordercolor="rgba(41,128,185,0.25)",
             borderwidth=1,
-            font=dict(size=11, family="DM Sans, sans-serif", color="#A7F0EB"),
+            font=dict(size=11, family="DM Sans, sans-serif", color="#1B2631"),
         ),
         margin=dict(l=60, r=30, t=55, b=55),
         hoverlabel=dict(
-            bgcolor="#071E20",
-            bordercolor="rgba(45,212,191,0.45)",
-            font=dict(family="Space Mono, monospace", size=11, color="#2DD4BF"),
+            bgcolor="#F0F8FF",
+            bordercolor="rgba(41,128,185,0.50)",
+            font=dict(family="Space Mono, monospace", size=11, color="#2980B9"),
         ),
     )
 )
@@ -440,14 +436,14 @@ def make_layout(**kwargs):
     base.update(kwargs)
     return go.Layout(**base)
 
-CYAN   = "#2DD4BF"   # Teal-400
-TEAL   = "#22D3EE"   # Cyan-400
-GREEN  = "#34D399"   # Emerald-400
-AMBER  = "#FBBF24"   # Amber-400
-PURPLE = "#818CF8"   # Indigo-400
-CORAL  = "#FB7185"   # Rose-400
-WHITE  = "#E2F8F5"   # Light teal-white
-MUTED  = "#3D7A75"   # Ocean muted
+CYAN   = "#2980B9"   # Sky blue
+TEAL   = "#5DADE2"   # Light blue
+GREEN  = "#1ABC9C"   # Teal green
+AMBER  = "#F39C12"   # Amber
+PURPLE = "#8E44AD"   # Purple
+CORAL  = "#E74C3C"   # Red coral
+WHITE  = "#1B2631"   # Dark text
+MUTED  = "#5D8AA8"   # Blue muted
 
 # ── DATA & PARAMETER JURNAL ──────────────────────────────────
 TAHUN_HIST  = np.array([2020, 2021, 2022, 2023, 2024], dtype=float)
@@ -519,10 +515,10 @@ pred_l_h = sol_log(t_rel_h, P0_HIST, k_fit_l, K_fit_l)
 with st.sidebar:
     st.markdown("""
     <div style="padding:16px 0 8px 0;">
-      <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#2DD4BF;letter-spacing:-0.5px;line-height:1.2;">
+      <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#2980B9;letter-spacing:-0.5px;line-height:1.2;">
         ODE Kota Tual
       </div>
-      <div style="font-family:'Space Mono',monospace;font-size:9px;color:#3D7A75;letter-spacing:2px;text-transform:uppercase;margin-top:4px;">
+      <div style="font-family:'Space Mono',monospace;font-size:9px;color:#5D8AA8;letter-spacing:2px;text-transform:uppercase;margin-top:4px;">
         Kelompok 5 · 2025
       </div>
     </div>
@@ -535,7 +531,7 @@ with st.sidebar:
                            f"Nilai saat ini: {float(round(K_JURNAL,4))*100:.2f}%/tahun")
     st.markdown(
         f"<div style='font-family:Space Mono,monospace;font-size:10px;"
-        f"color:#34D399;margin-top:-6px;margin-bottom:10px;'>"
+        f"color:#1ABC9C;margin-top:-6px;margin-bottom:10px;'>"
         f"→ {k_val:.4f} = <b>{k_val*100:.2f}%</b> / tahun</div>",
         unsafe_allow_html=True
     )
@@ -557,17 +553,17 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("""
     <div style='font-size:10px;color:#1A4060;line-height:2;font-family:Space Mono,monospace;'>
-    <span style='color:#2DD4BF;letter-spacing:1.5px;'>REFERENSI</span><br>
+    <span style='color:#2980B9;letter-spacing:1.5px;'>REFERENSI</span><br>
     Armin & Remetwa, M.G.K.<br>
     JIMAT Vol.6 No.1, 2025<br>
     DOI: 10.63976/jimat.v6i1.804<br><br>
-    <span style='color:#2DD4BF;letter-spacing:1.5px;'>DATA SUMBER</span><br>
+    <span style='color:#2980B9;letter-spacing:1.5px;'>DATA SUMBER</span><br>
     BPS Provinsi Maluku<br>
     2020 – 2024<br><br>
-    <div style='border-top:1px solid rgba(99,102,241,0.22);padding-top:12px;margin-top:4px;'>
-    <span style='color:#2DD4BF;letter-spacing:1.5px;'>KELOMPOK 5</span><br>
-    <span style='color:#2DD4BF;font-size:11px;'>Tugas Project</span><br>
-    <span style='color:#3D7A75;'>Pemodelan Persamaan<br>Diferensial</span><br><br>
+    <div style='border-top:1px solid rgba(0,140,255,0.15);padding-top:12px;margin-top:4px;'>
+    <span style='color:#2980B9;letter-spacing:1.5px;'>KELOMPOK 5</span><br>
+    <span style='color:#2980B9;font-size:11px;'>Tugas Project</span><br>
+    <span style='color:#5D8AA8;'>Pemodelan Persamaan<br>Diferensial</span><br><br>
     <span style='color:#8AABB8;'>● Albert Rafael Turnip</span><br>
     <span style='color:#1A4060;'>  4243540002</span><br><br>
     <span style='color:#8AABB8;'>● Apriyani Simbolon</span><br>
@@ -603,7 +599,7 @@ st.markdown("""
       </div>
     </div>
     <div class="hero-member">
-      <div class="hero-member-dot" style="background:#10B981;"></div>
+      <div class="hero-member-dot" style="background:#1ABC9C;"></div>
       <div>
         <div class="hero-member-name">Apriyani Simbolon</div>
         <div class="hero-member-nim">NIM · 4242240005</div>
@@ -1372,30 +1368,30 @@ with tab7:
 
     # ── HEADER JURNAL ──
     st.markdown("""
-    <div style="background:linear-gradient(135deg,#071E22,#0A2B2C);border:1px solid rgba(45,212,191,0.20);
+    <div style="background:linear-gradient(135deg,#FFFFFF,#EBF5FB);border:1px solid rgba(0,140,255,0.2);
     border-radius:10px;padding:24px 28px;margin-bottom:20px;position:relative;overflow:hidden;">
       <div style="position:absolute;top:0;left:0;right:0;height:2px;
-      background:linear-gradient(90deg,transparent,#14B8A6,#22D3EE,transparent);"></div>
-      <div style="font-family:'Space Mono',monospace;font-size:9px;color:#2DD4BF;letter-spacing:2px;margin-bottom:8px;">
+      background:linear-gradient(90deg,transparent,#2980B9,#5DADE2,transparent);"></div>
+      <div style="font-family:'Space Mono',monospace;font-size:9px;color:#2980B9;letter-spacing:2px;margin-bottom:8px;">
         JIMAT · Vol.6 No.1 · Juni 2025 · e-ISSN: 2774-1729
       </div>
-      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:#C8F7F0;
+      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:#1B2631;
       line-height:1.4;margin-bottom:10px;">
         Aplikasi Persamaan Differensial Dengan Pendekatan Model Pertumbuhan Eksponensial<br>
         Untuk Memprediksi Jumlah Penduduk Kota Tual Tahun 2026–2030
       </div>
-      <div style="font-family:'DM Sans',sans-serif;font-size:12.5px;color:#5EADA8;">
-        <b style="color:#2DD4BF;">Armin</b> · Politeknik Perikanan Negeri Tual (Teknologi Kelautan)
+      <div style="font-family:'DM Sans',sans-serif;font-size:12.5px;color:#3A6A88;">
+        <b style="color:#2980B9;">Armin</b> · Politeknik Perikanan Negeri Tual (Teknologi Kelautan)
         &nbsp;|&nbsp;
-        <b style="color:#34D399;">Michael Gerits Kriswanto Remetwa</b> · Politeknik Perikanan Negeri Tual (Agrowisata Bahari)
+        <b style="color:#1ABC9C;">Michael Gerits Kriswanto Remetwa</b> · Politeknik Perikanan Negeri Tual (Agrowisata Bahari)
       </div>
       <div style="margin-top:12px;">
-        <span style="font-family:'Space Mono',monospace;font-size:9px;color:#3D7A75;background:rgba(45,212,191,0.08);
-        border:1px solid rgba(45,212,191,0.18);border-radius:3px;padding:3px 8px;margin-right:6px;">
+        <span style="font-family:'Space Mono',monospace;font-size:9px;color:#5D8AA8;background:rgba(41,128,185,0.08);
+        border:1px solid rgba(41,128,185,0.20);border-radius:3px;padding:3px 8px;margin-right:6px;">
           DOI: 10.63976/jimat.v6i1.804
         </span>
-        <span style="font-family:'Space Mono',monospace;font-size:9px;color:#3D7A75;background:rgba(45,212,191,0.06);
-        border:1px solid rgba(52,211,153,0.18);border-radius:3px;padding:3px 8px;">
+        <span style="font-family:'Space Mono',monospace;font-size:9px;color:#5D8AA8;background:rgba(26,188,156,0.08);
+        border:1px solid rgba(26,188,156,0.20);border-radius:3px;padding:3px 8px;">
           Halaman 327–338
         </span>
       </div>
@@ -1414,7 +1410,7 @@ with tab7:
             Kota Tual sebagai kota persinggahan wilayah Maluku Tenggara belum memiliki proyeksi
             penduduk resmi. Penelitian ini bertujuan memprediksi jumlah penduduk 2026–2030
             menggunakan persamaan diferensial dengan asumsi pertumbuhan eksponensial —
-            model yang cocok untuk prediksi <b style="color:#2DD4BF">jangka pendek dengan sumber daya besar</b>.
+            model yang cocok untuk prediksi <b style="color:#2980B9">jangka pendek dengan sumber daya besar</b>.
           </div>
           <span class="jurnal-stat">🎯 Prediksi jangka pendek</span>
           <span class="jurnal-stat">📍 Kota Tual, Maluku</span>
@@ -1427,14 +1423,14 @@ with tab7:
           <div class="jurnal-title">Perhitungan Laju Pertumbuhan k</div>
           <div class="jurnal-body">
             Menggunakan data P₀ = 88.280 jiwa (2020) dan P(t) = 92.744 jiwa (2024), t = 4 tahun:<br><br>
-            <code style="font-family:'Space Mono',monospace;color:#2DD4BF;font-size:11px;">
+            <code style="font-family:'Space Mono',monospace;color:#2980B9;font-size:11px;">
               k = (1/4) · ln(92.744 / 88.280)<br>
               k = (1/4) · ln(1,0505)<br>
               k = (1/4) · 0,0488 = <b>0,0122</b>
             </code>
           </div>
           <span class="jurnal-stat">📈 k = 0.0122</span>
-          <span class="jurnal-stat" style="color:#34D399;border-color:rgba(16,185,129,0.2);">1.22% / tahun</span>
+          <span class="jurnal-stat" style="color:#1ABC9C;border-color:rgba(26,188,156,0.22);">1.22% / tahun</span>
         </div>
         """, unsafe_allow_html=True)
 
@@ -1444,9 +1440,9 @@ with tab7:
           <div class="jurnal-num">02</div>
           <div class="jurnal-title">Data & Metode</div>
           <div class="jurnal-body">
-            Data sekunder dari <b style="color:#2DD4BF">BPS Provinsi Maluku</b> tahun 2020–2024.
+            Data sekunder dari <b style="color:#2980B9">BPS Provinsi Maluku</b> tahun 2020–2024.
             Jenis penelitian: kuantitatif deskriptif. Model matematika persamaan diferensial:<br><br>
-            <code style="font-family:'Space Mono',monospace;color:#2DD4BF;font-size:11px;">
+            <code style="font-family:'Space Mono',monospace;color:#2980B9;font-size:11px;">
               dP/P = k dt &nbsp;→&nbsp; P(t) = P₀·e^(kt)
             </code>
           </div>
@@ -1491,7 +1487,7 @@ with tab7:
           <div class="jurnal-title">Temuan Kunci</div>
           <div class="jurnal-body">
             Selama 6 tahun (2024–2030) penduduk Kota Tual diproyeksikan bertambah
-            <b style="color:#2DD4BF;">7.049 jiwa</b> — dari 92.744 menjadi 99.793 jiwa,
+            <b style="color:#2980B9;">7.049 jiwa</b> — dari 92.744 menjadi 99.793 jiwa,
             dengan tren positif yang konsisten dan laju 1,22% per tahun.
           </div>
           <span class="jurnal-stat">+7.049 jiwa total</span>
@@ -1504,11 +1500,11 @@ with tab7:
           <div class="jurnal-num">06</div>
           <div class="jurnal-title">Batasan Model</div>
           <div class="jurnal-body">
-            Model eksponensial <b style="color:#F59E0B;">hanya disarankan jangka pendek</b>.
+            Model eksponensial <b style="color:#F39C12;">hanya disarankan jangka pendek</b>.
             Untuk jangka panjang disarankan model logistik yang mempertimbangkan:
             daya dukung lingkungan (K), migrasi, dan kebijakan pemerintah.
           </div>
-          <span class="jurnal-stat" style="color:#F59E0B;border-color:rgba(245,158,11,0.2);">⚠ Jangka pendek saja</span>
+          <span class="jurnal-stat" style="color:#F39C12;border-color:rgba(243,156,18,0.22);">⚠ Jangka pendek saja</span>
         </div>
         """, unsafe_allow_html=True)
 
@@ -1523,7 +1519,7 @@ with tab7:
             optimalisasi tata ruang, perencanaan infrastruktur,
             dan strategi sosio-ekonomi jangka pendek pemerintah Kota Tual.
           </div>
-          <span class="jurnal-stat" style="color:#34D399;border-color:rgba(16,185,129,0.2);">🏛 Kebijakan publik</span>
+          <span class="jurnal-stat" style="color:#1ABC9C;border-color:rgba(26,188,156,0.22);">🏛 Kebijakan publik</span>
         </div>
         """, unsafe_allow_html=True)
 
@@ -1543,14 +1539,14 @@ with tab7:
     fig_j = go.Figure(layout=make_layout(
         title=dict(text="Data BPS 2020–2024 + Prediksi Jurnal 2026–2030 · Kota Tual",
                    font=dict(size=14, color=WHITE, family="Syne, sans-serif"), x=0.01),
-        xaxis=dict(title="Tahun", dtick=1, gridcolor="rgba(45,212,191,0.08)"),
+        xaxis=dict(title="Tahun", dtick=1, gridcolor="rgba(41,128,185,0.12)"),
         yaxis=dict(title="Jumlah Penduduk (jiwa)", tickformat=",d",
-                   gridcolor="rgba(45,212,191,0.08)"),
+                   gridcolor="rgba(41,128,185,0.12)"),
         height=400,
         shapes=[dict(
             type="rect", x0=2024.5, x1=2030.5,
             y0=0, y1=1, yref="paper",
-            fillcolor="rgba(99,102,241,0.04)",
+            fillcolor="rgba(41,128,185,0.05)",
             line=dict(color="rgba(0,0,0,0)")
         )],
         annotations=[dict(
@@ -1558,7 +1554,7 @@ with tab7:
             text="ZONA PREDIKSI",
             showarrow=False,
             font=dict(family="Space Mono, monospace", size=9,
-                      color="rgba(99,102,241,0.3)"),
+                      color="rgba(41,128,185,0.35)"),
             yshift=-12
         )]
     ))
@@ -1568,7 +1564,7 @@ with tab7:
         x=np.concatenate([TAHUN_HIST, TAHUN_HIST[::-1]]),
         y=np.concatenate([POP_AKTUAL, sol_exp(TAHUN_HIST[::-1]-TAHUN_HIST[0], P0_HIST, K_JURNAL)]),
         fill="toself",
-        fillcolor="rgba(99,102,241,0.06)",
+        fillcolor="rgba(41,128,185,0.07)",
         line=dict(color="rgba(0,0,0,0)"),
         showlegend=False, name=""
     ))
@@ -1598,14 +1594,14 @@ with tab7:
             x=yr, y=pop, text=f"{pop:,}",
             showarrow=False, yshift=18,
             font=dict(color=GREEN, size=9, family="Space Mono, monospace"),
-            bgcolor="rgba(7,30,32,0.92)", borderpad=3
+            bgcolor="rgba(235,245,251,0.95)", borderpad=3
         )
     for yr, pop in zip(TAHUN_HIST, POP_AKTUAL):
         fig_j.add_annotation(
             x=yr, y=pop, text=f"{int(pop):,}",
             showarrow=False, yshift=-22,
             font=dict(color=AMBER, size=9, family="Space Mono, monospace"),
-            bgcolor="rgba(7,30,32,0.92)", borderpad=3
+            bgcolor="rgba(235,245,251,0.95)", borderpad=3
         )
 
     fig_j.add_vline(x=2024, line_dash="dash", line_color=AMBER,
@@ -1619,16 +1615,16 @@ with tab7:
     # ── ABSTRACT BOX ──
     st.markdown('<div class="section-label">Abstrak jurnal</div>', unsafe_allow_html=True)
     st.markdown("""
-    <div style="background:#071E20;border:1px solid rgba(45,212,191,0.20);border-radius:8px;
-    padding:20px 26px;font-size:12.5px;color:#5EADA8;line-height:1.9;font-family:'DM Sans',sans-serif;">
-      <span style="font-family:'Syne',sans-serif;font-weight:700;color:#2DD4BF;font-size:13px;">Abstrak · </span>
+    <div style="background:#EBF5FB;border:1px solid rgba(0,140,255,0.15);border-radius:8px;
+    padding:20px 26px;font-size:12.5px;color:#5D8AA8;line-height:1.9;font-family:'DM Sans',sans-serif;">
+      <span style="font-family:'Syne',sans-serif;font-weight:700;color:#2980B9;font-size:13px;">Abstrak · </span>
       Pertumbuhan penduduk merupakan faktor penting dalam perencanaan pembangunan suatu wilayah.
       Penelitian ini bertujuan memprediksi jumlah penduduk Kota Tual pada tahun 2026–2030
       menggunakan persamaan diferensial dengan asumsi model tumbuh secara eksponensial.
       Data bersumber dari BPS Provinsi Maluku tahun 2020–2024.
-      Diperoleh laju pertumbuhan sebesar <b style="color:#2DD4BF;">1,22% per tahun</b>.
-      Diperkirakan penduduk akan bertambah <b style="color:#34D399;">7.049 jiwa</b> selama 6 tahun —
-      dari <b style="color:#C8F7F0;">92.744 jiwa (2024)</b> menjadi <b style="color:#C8F7F0;">99.793 jiwa (2030)</b>.
+      Diperoleh laju pertumbuhan sebesar <b style="color:#2980B9;">1,22% per tahun</b>.
+      Diperkirakan penduduk akan bertambah <b style="color:#1ABC9C;">7.049 jiwa</b> selama 6 tahun —
+      dari <b style="color:#1B2631;">92.744 jiwa (2024)</b> menjadi <b style="color:#1B2631;">99.793 jiwa (2030)</b>.
       Rekomendasi: perlunya pengendalian laju pertumbuhan melalui kebijakan kependudukan berbasis data
       serta optimalisasi tata ruang dan infrastruktur.
     </div>
