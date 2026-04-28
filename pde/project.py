@@ -35,11 +35,11 @@ html, body, [class*="css"] {
     font-family: 'DM Sans', sans-serif;
 }
 .stApp {
-    background: #051F20;
-    color: #E2F8F5;
+    background: #1B6CA8;
+    color: #E8F6FF;
     background-image:
-        radial-gradient(ellipse 80% 50% at 10% 0%, rgba(45,212,191,0.08) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 40% at 90% 100%, rgba(45,212,191,0.06) 0%, transparent 60%);
+        radial-gradient(ellipse 80% 50% at 10% 0%, rgba(255,255,255,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 90% 100%, rgba(45,212,191,0.10) 0%, transparent 60%);
 }
 
 /* ── SIDEBAR ── */
@@ -387,7 +387,7 @@ div.stButton > button:hover {
 
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: #051F20; }
+::-webkit-scrollbar-track { background: #1B6CA8; }
 ::-webkit-scrollbar-thumb {
     background: rgba(45,212,191,0.35);
     border-radius: 4px;
