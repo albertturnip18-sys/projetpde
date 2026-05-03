@@ -1964,8 +1964,8 @@ with tab8:
                 "background-color": "#040C18",
                 "color": "#8AABB8",
             })
-            .applymap(lambda v: "color:#48CAE4;font-weight:700;", subset=["Prediksi (jiwa)"])
-            .applymap(lambda v: "color:#52B788;", subset=["Pertambahan (jiwa)", "% Tumbuh"]),
+            .map(lambda v: "color:#48CAE4;font-weight:700;", subset=["Prediksi (jiwa)"])
+            .map(lambda v: "color:#52B788;", subset=["Pertambahan (jiwa)", "% Tumbuh"]),
         hide_index=True,
         use_container_width=True,
         height=220,
@@ -2185,9 +2185,9 @@ with tab8:
                 "font-family": "Space Mono, monospace",
                 "font-size": "10px",
                 "color": "#6A9BB8",
-            }).applymap(lambda v: "color:#48CAE4;", subset=["Eksak (jiwa)"])
-              .applymap(lambda v: "color:#F4A261;", subset=["Err Euler (%)"])
-              .applymap(lambda v: "color:#52B788;", subset=["Err RK4 (%)"]),
+            }).map(lambda v: "color:#48CAE4;", subset=["Eksak (jiwa)"])
+              .map(lambda v: "color:#F4A261;", subset=["Err Euler (%)"])
+              .map(lambda v: "color:#52B788;", subset=["Err RK4 (%)"]),
             hide_index=True, use_container_width=True, height=200,
         )
 
@@ -2205,3 +2205,4 @@ with tab8:
         """, unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
+    
