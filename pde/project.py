@@ -623,7 +623,7 @@ c6.metric("MAPE Logistik", f"{mape(POP_AKTUAL, pred_l_h):.3f}%")
 st.markdown("---")
 
 # ── TABS ─────────────────────────────────────────────────────
-tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
     "🎬  Animasi Utama",
     "🌀  Phase Portrait",
     "⚙️  Metode Numerik",
@@ -631,6 +631,7 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
     "📊  Tabel & Validasi",
     "📐  Derivasi ODE",
     "📖  Ringkasan Jurnal",
+    "🔢  Kalkulator Numerik",
 ])
 
 
@@ -1629,3 +1630,578 @@ with tab7:
       serta optimalisasi tata ruang dan infrastruktur.
     </div>
     """, unsafe_allow_html=True)
+
+
+# ╔══════════════════════════════════════════════════════════════╗
+# ║  TAB 8 — KALKULATOR NUMERIK STEP-BY-STEP                   ║
+# ╚══════════════════════════════════════════════════════════════╝
+with tab8:
+    import math
+
+    # ── CSS TAMBAHAN KHUSUS TAB 8 ──
+    st.markdown("""
+    <style>
+    .calc-section {
+        background: linear-gradient(135deg,#060F20 0%,#071A28 100%);
+        border: 1px solid rgba(0,140,255,0.18);
+        border-radius: 12px;
+        padding: 22px 26px;
+        margin-bottom: 18px;
+        position: relative;
+        overflow: hidden;
+    }
+    .calc-section::before {
+        content:'';
+        position:absolute;top:0;left:0;right:0;height:2px;
+        background:linear-gradient(90deg,transparent,#48CAE4 40%,#52B788 60%,transparent);
+    }
+    .calc-title {
+        font-family:'Syne',sans-serif;
+        font-size:15px;font-weight:800;
+        color:#C0D8E8;margin-bottom:4px;letter-spacing:-0.3px;
+    }
+    .calc-subtitle {
+        font-family:'Space Mono',monospace;
+        font-size:9px;color:#0096C7;letter-spacing:2px;
+        text-transform:uppercase;margin-bottom:14px;
+    }
+    .step-box {
+        background:#040C18;
+        border:1px solid rgba(0,140,255,0.14);
+        border-radius:8px;
+        padding:16px 20px;
+        margin:10px 0;
+        font-family:'Space Mono',monospace;
+        font-size:12px;
+        color:#8AABB8;
+        line-height:1.9;
+        position:relative;
+    }
+    .step-num {
+        position:absolute;top:12px;right:16px;
+        font-size:22px;font-weight:700;
+        color:rgba(72,202,228,0.12);
+        font-family:'Syne',sans-serif;
+        user-select:none;
+    }
+    .step-label {
+        font-family:'Syne',sans-serif;
+        font-size:12px;font-weight:700;
+        color:#48CAE4;margin-bottom:6px;
+    }
+    .highlight-val {
+        color:#48CAE4;font-weight:700;
+    }
+    .highlight-green {
+        color:#52B788;font-weight:700;
+    }
+    .highlight-amber {
+        color:#F4A261;font-weight:700;
+    }
+    .result-big {
+        font-family:'Syne',sans-serif;
+        font-size:28px;font-weight:800;
+        color:#48CAE4;letter-spacing:-1px;
+        margin:6px 0 2px 0;
+    }
+    .result-label {
+        font-family:'Space Mono',monospace;
+        font-size:10px;color:#3A6A88;letter-spacing:1px;
+        text-transform:uppercase;
+    }
+    .euler-row {
+        display:flex;gap:12px;align-items:center;
+        border-bottom:1px solid rgba(0,140,255,0.07);
+        padding:5px 0;
+    }
+    .euler-cell {
+        font-family:'Space Mono',monospace;font-size:11px;
+        color:#6A9BB8;min-width:90px;
+    }
+    .euler-cell-h { color:#48CAE4;font-weight:700; }
+    .rk4-k {
+        background:rgba(0,150,199,0.06);
+        border-left:2px solid #0096C7;
+        border-radius:0 4px 4px 0;
+        padding:4px 10px;margin:3px 0;
+        font-family:'Space Mono',monospace;font-size:11px;color:#6A9BB8;
+    }
+    .compare-bar {
+        height:10px;border-radius:5px;
+        background:linear-gradient(90deg,#48CAE4,#52B788);
+        margin:4px 0;
+    }
+    .tag-box {
+        display:inline-block;
+        background:rgba(72,202,228,0.1);
+        border:1px solid rgba(72,202,228,0.22);
+        border-radius:4px;
+        padding:2px 9px;
+        font-family:'Space Mono',monospace;
+        font-size:10px;color:#48CAE4;
+        margin:2px 3px;
+    }
+    .tag-green {
+        background:rgba(82,183,136,0.1);
+        border-color:rgba(82,183,136,0.22);
+        color:#52B788;
+    }
+    .tag-amber {
+        background:rgba(244,162,97,0.1);
+        border-color:rgba(244,162,97,0.22);
+        color:#F4A261;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<div class="section-label">🔢 Kalkulator numerik step-by-step · Semua langkah perhitungan ditampilkan</div>',
+                unsafe_allow_html=True)
+
+    # ── PANEL KONTROL INPUT ──
+    st.markdown('<div class="calc-section">', unsafe_allow_html=True)
+    st.markdown('<div class="calc-title">⚙ Input Parameter Perhitungan</div>', unsafe_allow_html=True)
+    st.markdown('<div class="calc-subtitle">Sesuaikan nilai P₀, P(t), dan tahun prediksi</div>', unsafe_allow_html=True)
+
+    col_in1, col_in2, col_in3 = st.columns(3)
+    with col_in1:
+        inp_P0 = st.number_input("P₀ — Populasi Awal (jiwa)", min_value=10000,
+                                  max_value=500000, value=88280, step=100,
+                                  help="Populasi tahun awal (2020 = 88.280)")
+        inp_tahun0 = st.number_input("Tahun Awal", min_value=2000, max_value=2025,
+                                      value=2020, step=1)
+    with col_in2:
+        inp_Pt = st.number_input("P(t) — Populasi Akhir Data (jiwa)", min_value=10000,
+                                  max_value=500000, value=92744, step=100,
+                                  help="Populasi tahun terakhir data (2024 = 92.744)")
+        inp_tahunt = st.number_input("Tahun Akhir Data", min_value=2001, max_value=2030,
+                                      value=2024, step=1)
+    with col_in3:
+        inp_pred_start = st.number_input("Mulai Prediksi (tahun)", min_value=2020,
+                                          max_value=2040, value=2026, step=1)
+        inp_pred_end   = st.number_input("Akhir Prediksi (tahun)", min_value=2021,
+                                          max_value=2050, value=2030, step=1)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # ── HITUNG SEMUA ──
+    t_data   = float(inp_tahunt - inp_tahun0)
+    ratio    = inp_Pt / inp_P0
+    ln_ratio = math.log(ratio)
+    k_calc   = ln_ratio / t_data if t_data > 0 else 0.0
+    P0_base  = float(inp_Pt)          # base prediksi = populasi akhir data
+    pred_years = list(range(int(inp_pred_start), int(inp_pred_end) + 1))
+
+    # ══════════════════════════════════════════
+    # BLOK 1 — HITUNG k STEP-BY-STEP
+    # ══════════════════════════════════════════
+    st.markdown('<div class="calc-section">', unsafe_allow_html=True)
+    st.markdown('<div class="calc-title">📐 Langkah 1 — Menghitung Laju Pertumbuhan k</div>', unsafe_allow_html=True)
+    st.markdown('<div class="calc-subtitle">Derivasi dari ODE · dP/P = k dt → P(t) = P₀·e^(kt)</div>', unsafe_allow_html=True)
+
+    col_k1, col_k2 = st.columns([3, 2])
+    with col_k1:
+        st.markdown(f"""
+        <div class="step-box">
+          <div class="step-num">01</div>
+          <div class="step-label">Rumus Laju Pertumbuhan</div>
+          k = (1/t) · ln(P(t) / P₀)
+        </div>
+
+        <div class="step-box">
+          <div class="step-num">02</div>
+          <div class="step-label">Substitusi Nilai</div>
+          P₀ &nbsp;= <span class="highlight-amber">{inp_P0:,}</span> jiwa &nbsp;(tahun {inp_tahun0})<br>
+          P(t) = <span class="highlight-amber">{inp_Pt:,}</span> jiwa &nbsp;(tahun {inp_tahunt})<br>
+          t &nbsp;&nbsp;&nbsp;= <span class="highlight-val">{t_data:.0f}</span> tahun
+        </div>
+
+        <div class="step-box">
+          <div class="step-num">03</div>
+          <div class="step-label">Langkah Perhitungan</div>
+          k = (1/{t_data:.0f}) · ln({inp_Pt:,} / {inp_P0:,})<br>
+          k = (1/{t_data:.0f}) · ln(<span class="highlight-val">{ratio:.6f}</span>)<br>
+          k = (1/{t_data:.0f}) · <span class="highlight-val">{ln_ratio:.6f}</span><br>
+          k = <span class="highlight-green">{k_calc:.6f}</span>
+        </div>
+
+        <div class="step-box">
+          <div class="step-num">04</div>
+          <div class="step-label">Hasil Akhir</div>
+          <span class="highlight-green">k = {k_calc:.6f} = {k_calc*100:.4f}% per tahun</span><br>
+          <span style="color:#3A6A88;font-size:11px;">→ Setiap tahun penduduk bertumbuh rata-rata {k_calc*100:.2f}%</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col_k2:
+        st.markdown(f"""
+        <div style="background:#040C18;border:1px solid rgba(72,202,228,0.2);
+        border-radius:10px;padding:24px;text-align:center;margin-top:0;">
+          <div class="result-label">Nilai k Terhitung</div>
+          <div class="result-big">{k_calc:.4f}</div>
+          <div style="font-family:'Space Mono',monospace;font-size:13px;color:#52B788;margin:4px 0 16px 0;">
+            ≈ {k_calc*100:.2f}% / tahun
+          </div>
+          <hr style="border-color:rgba(0,140,255,0.1);margin:12px 0;">
+          <div class="result-label" style="margin-top:12px;">Perbandingan</div>
+          <div style="font-family:'Space Mono',monospace;font-size:11px;color:#3A6A88;margin-top:8px;text-align:left;">
+            Jurnal (k) &nbsp;= {K_JURNAL:.4f}<br>
+            Kalkulator = {k_calc:.4f}<br>
+            Selisih &nbsp;&nbsp;= {abs(k_calc - K_JURNAL):.6f}
+          </div>
+          <div style="margin-top:14px;">
+            <span class="tag-box">ln ratio = {ln_ratio:.4f}</span>
+            <span class="tag-green tag-box">t = {t_data:.0f} thn</span>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Mini gauge / bar
+        pct_k = min(k_calc / 0.05, 1.0) * 100
+        st.markdown(f"""
+        <div style="margin-top:14px;background:#040C18;border:1px solid rgba(0,140,255,0.14);
+        border-radius:8px;padding:14px 18px;">
+          <div style="font-family:'Space Mono',monospace;font-size:9px;color:#0096C7;
+          letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Skala k (0% – 5%)</div>
+          <div style="background:rgba(0,140,255,0.08);border-radius:6px;height:12px;overflow:hidden;">
+            <div style="height:100%;width:{pct_k:.1f}%;
+            background:linear-gradient(90deg,#0096C7,#48CAE4,#52B788);border-radius:6px;
+            transition:width 0.5s ease;"></div>
+          </div>
+          <div style="font-family:'Space Mono',monospace;font-size:10px;color:#48CAE4;margin-top:6px;">
+            {k_calc*100:.4f}% dari batas 5%
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # ══════════════════════════════════════════
+    # BLOK 2 — PREDIKSI TAHUNAN STEP-BY-STEP
+    # ══════════════════════════════════════════
+    st.markdown('<div class="calc-section">', unsafe_allow_html=True)
+    st.markdown('<div class="calc-title">📈 Langkah 2 — Prediksi Jumlah Penduduk Tiap Tahun</div>', unsafe_allow_html=True)
+    st.markdown('<div class="calc-subtitle">P(t) = P₀ · e^(k·t) · dengan P₀ = populasi tahun terakhir data</div>', unsafe_allow_html=True)
+
+    pred_data = []
+    for yr in pred_years:
+        t_yr     = float(yr - inp_tahunt)
+        kt       = k_calc * t_yr
+        e_kt     = math.exp(kt)
+        P_yr     = P0_base * e_kt
+        pred_data.append({
+            "tahun": yr, "t": t_yr, "kt": kt,
+            "e_kt": e_kt, "P": P_yr
+        })
+
+    # Tampilkan step-by-step per tahun
+    for i, row in enumerate(pred_data):
+        delta_str = ""
+        if i == 0:
+            delta = row["P"] - P0_base
+            delta_str = f"(+{delta:,.0f} dari 2024)"
+        else:
+            delta = row["P"] - pred_data[i-1]["P"]
+            delta_str = f"(+{delta:,.0f} dari {pred_years[i-1]})"
+
+        col_a, col_b = st.columns([5, 2])
+        with col_a:
+            st.markdown(f"""
+            <div class="step-box">
+              <div class="step-num">{i+1:02d}</div>
+              <div class="step-label">Prediksi Tahun {row['tahun']}</div>
+              t &nbsp;= {row['tahun']} − {inp_tahunt} = <span class="highlight-val">{row['t']:.0f} tahun</span><br>
+              k·t = {k_calc:.4f} × {row['t']:.0f} = <span class="highlight-val">{row['kt']:.4f}</span><br>
+              e^(k·t) = e^<span class="highlight-val">{row['kt']:.4f}</span> = <span class="highlight-val">{row['e_kt']:.6f}</span><br>
+              P({row['tahun']}) = {P0_base:,.0f} × {row['e_kt']:.6f} = <span class="highlight-green">{row['P']:,.0f} jiwa</span>
+              &nbsp;<span style="color:#3A6A88;font-size:11px;">{delta_str}</span>
+            </div>
+            """, unsafe_allow_html=True)
+        with col_b:
+            bar_w = min((row["P"] - P0_base) / (pred_data[-1]["P"] - P0_base + 1) * 100, 100) if len(pred_data) > 1 else 50
+            st.markdown(f"""
+            <div style="background:#040C18;border:1px solid rgba(0,140,255,0.12);border-radius:8px;
+            padding:14px 16px;height:100%;box-sizing:border-box;">
+              <div style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;
+              color:#48CAE4;letter-spacing:-0.5px;">{row['P']:,.0f}</div>
+              <div style="font-family:'Space Mono',monospace;font-size:9px;color:#3A6A88;
+              text-transform:uppercase;letter-spacing:1px;">jiwa · {row['tahun']}</div>
+              <div style="background:rgba(0,140,255,0.08);border-radius:4px;height:6px;
+              margin-top:8px;overflow:hidden;">
+                <div style="height:100%;width:{bar_w:.0f}%;
+                background:linear-gradient(90deg,#0096C7,#52B788);border-radius:4px;"></div>
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # ══════════════════════════════════════════
+    # BLOK 3 — TABEL RINGKASAN + GRAFIK
+    # ══════════════════════════════════════════
+    st.markdown('<div class="calc-section">', unsafe_allow_html=True)
+    st.markdown('<div class="calc-title">📋 Ringkasan Hasil Perhitungan</div>', unsafe_allow_html=True)
+    st.markdown('<div class="calc-subtitle">Semua nilai prediksi dalam satu tabel · termasuk selisih & persentase tumbuh</div>', unsafe_allow_html=True)
+
+    df_calc = pd.DataFrame({
+        "Tahun":     [r["tahun"] for r in pred_data],
+        "t (tahun)": [r["t"] for r in pred_data],
+        "k·t":       [f"{r['kt']:.4f}" for r in pred_data],
+        "e^(k·t)":   [f"{r['e_kt']:.6f}" for r in pred_data],
+        "Prediksi (jiwa)": [round(r["P"]) for r in pred_data],
+    })
+
+    # Tambah kolom pertambahan
+    preds = [round(r["P"]) for r in pred_data]
+    deltas = [preds[0] - round(P0_base)] + [preds[i] - preds[i-1] for i in range(1, len(preds))]
+    pct_grow = [(preds[0] - round(P0_base)) / round(P0_base) * 100] + \
+               [(preds[i] - preds[i-1]) / preds[i-1] * 100 for i in range(1, len(preds))]
+    df_calc["Pertambahan (jiwa)"] = [f"+{d:,}" for d in deltas]
+    df_calc["% Tumbuh"] = [f"{p:.3f}%" for p in pct_grow]
+
+    st.dataframe(
+        df_calc.style
+            .set_properties(**{
+                "font-family": "Space Mono, monospace",
+                "font-size": "11px",
+                "background-color": "#040C18",
+                "color": "#8AABB8",
+            })
+            .applymap(lambda v: "color:#48CAE4;font-weight:700;", subset=["Prediksi (jiwa)"])
+            .applymap(lambda v: "color:#52B788;", subset=["Pertambahan (jiwa)", "% Tumbuh"]),
+        hide_index=True,
+        use_container_width=True,
+        height=220,
+    )
+
+    # ── Summary metrics ──
+    total_growth = preds[-1] - round(P0_base) if preds else 0
+    avg_growth   = total_growth / len(preds) if preds else 0
+    col_s1, col_s2, col_s3, col_s4 = st.columns(4)
+    col_s1.metric("P₀ Prediksi", f"{round(P0_base):,} jiwa", f"tahun {inp_tahunt}")
+    col_s2.metric(f"P Akhir ({inp_pred_end})", f"{preds[-1]:,} jiwa", f"+{total_growth:,}" if preds else "-")
+    col_s3.metric("Total Pertambahan", f"{total_growth:,} jiwa", f"selama {len(pred_years)} tahun")
+    col_s4.metric("Rata-rata/tahun", f"~{avg_growth:,.0f} jiwa", f"k = {k_calc:.4f}")
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # ══════════════════════════════════════════
+    # BLOK 4 — PERBANDINGAN EULER vs RK4 vs EKSAK
+    # ══════════════════════════════════════════
+    st.markdown('<div class="calc-section">', unsafe_allow_html=True)
+    st.markdown('<div class="calc-title">⚙ Langkah 3 — Perbandingan Metode Numerik per Langkah</div>', unsafe_allow_html=True)
+    st.markdown('<div class="calc-subtitle">Euler · RK4 · Solusi Eksak · ditampilkan step-by-step dengan Δt = 1 tahun</div>', unsafe_allow_html=True)
+
+    if pred_data:
+        # Euler & RK4 step-by-step dari P0_base, Δt = 1
+        dt_step  = 1.0
+        euler_steps = []
+        rk4_steps   = []
+        P_euler = P0_base
+        P_rk4   = P0_base
+
+        for row in pred_data:
+            t_i   = row["t"] - 1 if row["t"] >= 1 else 0
+            # Euler
+            dP_euler  = k_calc * P_euler
+            P_euler_n = P_euler + dt_step * dP_euler
+            euler_steps.append({
+                "tahun": row["tahun"], "P_n": P_euler,
+                "dP": dP_euler, "P_n1": P_euler_n
+            })
+            P_euler = P_euler_n
+
+            # RK4
+            k1 = k_calc * P_rk4
+            k2 = k_calc * (P_rk4 + 0.5 * dt_step * k1)
+            k3 = k_calc * (P_rk4 + 0.5 * dt_step * k2)
+            k4 = k_calc * (P_rk4 + dt_step * k3)
+            P_rk4_n = P_rk4 + (dt_step / 6) * (k1 + 2*k2 + 2*k3 + k4)
+            rk4_steps.append({
+                "tahun": row["tahun"], "P_n": P_rk4,
+                "k1": k1, "k2": k2, "k3": k3, "k4": k4,
+                "P_n1": P_rk4_n
+            })
+            P_rk4 = P_rk4_n
+
+        # Tampilkan step per tahun
+        col_num1, col_num2 = st.columns(2)
+
+        with col_num1:
+            st.markdown("""
+            <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
+            color:#48CAE4;margin-bottom:10px;">
+            🔵 Metode Euler (Δt = 1 thn)
+            </div>
+            <div style="font-family:'Space Mono',monospace;font-size:10px;color:#3A6A88;
+            margin-bottom:8px;">P_{n+1} = P_n + Δt · k · P_n</div>
+            """, unsafe_allow_html=True)
+
+            for e in euler_steps:
+                exact_val = P0_base * math.exp(k_calc * e["tahun"] - k_calc * 0 if True else 0)
+                exact_val = P0_base * math.exp(k_calc * (e["tahun"] - inp_tahunt))
+                err_pct   = abs(e["P_n1"] - exact_val) / exact_val * 100
+                st.markdown(f"""
+                <div class="step-box" style="padding:12px 16px;">
+                  <div class="step-label">Iterasi → Tahun {e['tahun']}</div>
+                  P_n &nbsp;= <span class="highlight-amber">{e['P_n']:,.2f}</span><br>
+                  dP &nbsp;= k · P_n = {k_calc:.4f} × {e['P_n']:,.2f}<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= <span class="highlight-val">{e['dP']:,.2f}</span><br>
+                  P_n+1 = {e['P_n']:,.2f} + 1 × {e['dP']:,.2f}<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>= <span class="highlight-green">{e['P_n1']:,.2f}</span></b><br>
+                  <span style="color:#3A6A88;font-size:10px;">
+                  Eksak = {exact_val:,.2f} | Error = {err_pct:.4f}%
+                  </span>
+                </div>
+                """, unsafe_allow_html=True)
+
+        with col_num2:
+            st.markdown("""
+            <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
+            color:#52B788;margin-bottom:10px;">
+            🟢 Metode Runge-Kutta 4 (Δt = 1 thn)
+            </div>
+            <div style="font-family:'Space Mono',monospace;font-size:10px;color:#3A6A88;
+            margin-bottom:8px;">k1..k4 dihitung → P_n+1 = P_n + (Δt/6)(k1+2k2+2k3+k4)</div>
+            """, unsafe_allow_html=True)
+
+            for r in rk4_steps:
+                exact_val = P0_base * math.exp(k_calc * (r["tahun"] - inp_tahunt))
+                err_pct   = abs(r["P_n1"] - exact_val) / exact_val * 100
+                st.markdown(f"""
+                <div class="step-box" style="padding:12px 16px;">
+                  <div class="step-label">Iterasi → Tahun {r['tahun']}</div>
+                  P_n = <span class="highlight-amber">{r['P_n']:,.2f}</span><br>
+                  <div class="rk4-k">k1 = k·P_n &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= {r['k1']:,.4f}</div>
+                  <div class="rk4-k">k2 = k·(P_n+½·k1) = {r['k2']:,.4f}</div>
+                  <div class="rk4-k">k3 = k·(P_n+½·k2) = {r['k3']:,.4f}</div>
+                  <div class="rk4-k">k4 = k·(P_n+k3) &nbsp;&nbsp;= {r['k4']:,.4f}</div>
+                  φ = (k1+2k2+2k3+k4)/6 = {(r['k1']+2*r['k2']+2*r['k3']+r['k4'])/6:,.4f}<br>
+                  P_n+1 = <b><span class="highlight-green">{r['P_n1']:,.2f}</span></b><br>
+                  <span style="color:#3A6A88;font-size:10px;">
+                  Eksak = {exact_val:,.2f} | Error = {err_pct:.6f}%
+                  </span>
+                </div>
+                """, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # ══════════════════════════════════════════
+    # BLOK 5 — GRAFIK PERBANDINGAN VISUAL
+    # ══════════════════════════════════════════
+    st.markdown('<div class="calc-section">', unsafe_allow_html=True)
+    st.markdown('<div class="calc-title">📊 Visualisasi Perbandingan Hasil</div>', unsafe_allow_html=True)
+    st.markdown('<div class="calc-subtitle">Eksak vs Euler vs RK4 · perbandingan nilai & error</div>', unsafe_allow_html=True)
+
+    if pred_data and len(pred_years) > 0:
+        tahun_arr = np.array(pred_years, dtype=float)
+        t_arr     = tahun_arr - inp_tahunt
+
+        # Hitung semua nilai
+        exact_arr  = np.array([P0_base * math.exp(k_calc * t) for t in t_arr])
+        euler_arr  = np.array([e["P_n1"] for e in euler_steps]) if euler_steps else exact_arr
+        rk4_arr    = np.array([r["P_n1"] for r in rk4_steps])   if rk4_steps  else exact_arr
+
+        err_euler = np.abs(euler_arr - exact_arr) / exact_arr * 100
+        err_rk4   = np.abs(rk4_arr  - exact_arr) / exact_arr * 100
+
+        fig_calc = make_subplots(
+            rows=2, cols=1,
+            subplot_titles=["Nilai Prediksi: Eksak vs Euler vs RK4", "Error Relatif (%)"],
+            vertical_spacing=0.14,
+            row_heights=[0.65, 0.35],
+        )
+
+        # Panel atas — kurva prediksi
+        fig_calc.add_trace(go.Scatter(
+            x=tahun_arr, y=exact_arr, mode="lines+markers+text",
+            name="Eksak P(t)=P₀·e^(kt)",
+            line=dict(color=CYAN, width=3),
+            marker=dict(size=10, symbol="diamond", color=CYAN,
+                        line=dict(color=WHITE, width=1.5)),
+            text=[f"{v:,.0f}" for v in exact_arr],
+            textposition="top center",
+            textfont=dict(color=CYAN, size=9, family="Space Mono"),
+        ), row=1, col=1)
+
+        fig_calc.add_trace(go.Scatter(
+            x=tahun_arr, y=euler_arr, mode="lines+markers",
+            name="Euler",
+            line=dict(color=AMBER, width=2, dash="dash"),
+            marker=dict(size=8, color=AMBER),
+        ), row=1, col=1)
+
+        fig_calc.add_trace(go.Scatter(
+            x=tahun_arr, y=rk4_arr, mode="lines+markers",
+            name="RK4",
+            line=dict(color=GREEN, width=2, dash="dot"),
+            marker=dict(size=8, color=GREEN, symbol="square"),
+        ), row=1, col=1)
+
+        # Panel bawah — error
+        fig_calc.add_trace(go.Bar(
+            x=tahun_arr, y=err_euler,
+            name="Error Euler (%)", marker_color=AMBER,
+            opacity=0.7, width=0.3,
+            offset=-0.15,
+        ), row=2, col=1)
+
+        fig_calc.add_trace(go.Bar(
+            x=tahun_arr, y=err_rk4,
+            name="Error RK4 (%)", marker_color=GREEN,
+            opacity=0.7, width=0.3,
+            offset=0.15,
+        ), row=2, col=1)
+
+        fig_calc.update_layout(
+            **{k: v for k, v in PLOTLY_TEMPLATE["layout"].items()
+               if k not in ("xaxis", "yaxis")},
+            height=540,
+            showlegend=True,
+            title=dict(
+                text=f"Perbandingan Metode Numerik · k={k_calc:.4f} · P₀={P0_base:,.0f}",
+                font=dict(size=13, color=WHITE, family="Syne, sans-serif"), x=0.01
+            ),
+        )
+        fig_calc.update_yaxes(tickformat=",d", row=1, col=1,
+                               gridcolor="rgba(0,140,255,0.06)")
+        fig_calc.update_xaxes(dtick=1, row=1, col=1,
+                               gridcolor="rgba(0,140,255,0.06)")
+        fig_calc.update_yaxes(title_text="Error (%)", row=2, col=1,
+                               gridcolor="rgba(0,140,255,0.06)",
+                               tickformat=".6f")
+        fig_calc.update_xaxes(dtick=1, row=2, col=1,
+                               gridcolor="rgba(0,140,255,0.06)")
+
+        st.plotly_chart(fig_calc, use_container_width=True)
+
+        # Tabel error ringkasan
+        df_err = pd.DataFrame({
+            "Tahun":       [int(y) for y in tahun_arr],
+            "Eksak (jiwa)":[f"{v:,.2f}" for v in exact_arr],
+            "Euler (jiwa)":[f"{v:,.2f}" for v in euler_arr],
+            "RK4 (jiwa)":  [f"{v:,.2f}" for v in rk4_arr],
+            "Err Euler (%)": [f"{v:.6f}" for v in err_euler],
+            "Err RK4 (%)":   [f"{v:.8f}" for v in err_rk4],
+        })
+        st.dataframe(
+            df_err.style.set_properties(**{
+                "font-family": "Space Mono, monospace",
+                "font-size": "10px",
+                "color": "#6A9BB8",
+            }).applymap(lambda v: "color:#48CAE4;", subset=["Eksak (jiwa)"])
+              .applymap(lambda v: "color:#F4A261;", subset=["Err Euler (%)"])
+              .applymap(lambda v: "color:#52B788;", subset=["Err RK4 (%)"]),
+            hide_index=True, use_container_width=True, height=200,
+        )
+
+        st.markdown(f"""
+        <div style="background:#040C18;border:1px solid rgba(82,183,136,0.18);
+        border-radius:8px;padding:14px 20px;margin-top:14px;
+        font-family:'Space Mono',monospace;font-size:11px;color:#5A8099;line-height:2;">
+          <span style="color:#52B788;font-size:13px;font-family:'Syne',sans-serif;font-weight:700;">
+          ✅ Kesimpulan Akurasi Numerik
+          </span><br>
+          Error RK4 ≈ <span style="color:#52B788;">{err_rk4.max():.8f}%</span> (sangat kecil, hampir identik dengan solusi eksak)<br>
+          Error Euler ≈ <span style="color:#F4A261;">{err_euler.max():.6f}%</span> (lebih besar, tapi masih dapat diterima untuk Δt = 1 tahun)<br>
+          → RK4 jauh lebih akurat karena menggunakan 4 estimasi kemiringan per langkah
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
