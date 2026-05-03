@@ -454,7 +454,7 @@ POP_JURNAL  = np.array([95035, 96176, 97381, 98587, 99793])
 P0_HIST = POP_AKTUAL[0]   # 88.280 (2020)
 P0_PRED = POP_AKTUAL[-1]  # 92.744 (2024)
 T_FIT   = TAHUN_HIST[-1] - TAHUN_HIST[0]  # 4 tahun
-K_JURNAL = (1 / T_FIT) * np.log(P0_PRED / P0_HIST)  # 0.0122
+K_JURNAL = 0.0122  # laju pertumbuhan tetap sesuai jurnal Armin & Remetwa (2025)
 
 K_DEFAULT = 150_000.0
 
@@ -497,7 +497,7 @@ def fit_models():
     t_rel = TAHUN_HIST - TAHUN_HIST[0]
     popt_e, _ = curve_fit(
         lambda t, k: sol_exp(t, P0_HIST, k),
-        t_rel, POP_AKTUAL, p0=[0.012], bounds=(0, 0.2)
+        t_rel, POP_AKTUAL, p0=[0.0122], bounds=(0, 0.2)
     )
     popt_l, _ = curve_fit(
         lambda t, k, K: sol_log(t, P0_HIST, k, K),
@@ -507,6 +507,8 @@ def fit_models():
     return popt_e[0], popt_l[0], popt_l[1]
 
 k_fit_e, k_fit_l, K_fit_l = fit_models()
+k_fit_e  = 0.0122  # dikunci ke nilai jurnal
+
 t_rel_h  = TAHUN_HIST - TAHUN_HIST[0]
 pred_e_h = sol_exp(t_rel_h, P0_HIST, k_fit_e)
 pred_l_h = sol_log(t_rel_h, P0_HIST, k_fit_l, K_fit_l)
@@ -526,9 +528,9 @@ with st.sidebar:
 
     st.markdown('<div class="section-label">⚙ Parameter Model</div>', unsafe_allow_html=True)
     k_val = st.slider("k — laju pertumbuhan", 0.003, 0.050,
-                      float(round(K_JURNAL, 4)), 0.001, format="%.4f",
+                      0.0122, 0.001, format="%.4f",
                       help=f"Nilai jurnal: 0.0122 → setara {0.0122*100:.2f}%/tahun. "
-                           f"Nilai saat ini: {float(round(K_JURNAL,4))*100:.2f}%/tahun")
+                           f"Nilai saat ini: {0.0122*100:.2f}%/tahun")
     st.markdown(
         f"<div style='font-family:Space Mono,monospace;font-size:10px;"
         f"color:#52B788;margin-top:-6px;margin-bottom:10px;'>"
