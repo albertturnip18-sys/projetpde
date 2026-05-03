@@ -1786,7 +1786,7 @@ with tab8:
     t_data   = float(inp_tahunt - inp_tahun0)
     ratio    = inp_Pt / inp_P0
     ln_ratio = math.log(ratio)
-    k_calc   = ln_ratio / t_data if t_data > 0 else 0.0
+    k_calc   = 0.0122  # nilai tetap sesuai jurnal Armin & Remetwa (2025)
     P0_base  = float(inp_Pt)          # base prediksi = populasi akhir data
     pred_years = list(range(int(inp_pred_start), int(inp_pred_end) + 1))
 
@@ -2205,4 +2205,3 @@ with tab8:
         """, unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
-    
