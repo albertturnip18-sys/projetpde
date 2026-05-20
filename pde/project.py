@@ -150,20 +150,38 @@ MUTED  = "#3A6A88"
 ORANGE = "#FB8500"
 
 # ── PLOTLY TEMPLATE ──────────────────────────────────────────
-PTPL = dict(
-    paper_bgcolor="rgba(3,7,15,0)",
-    plot_bgcolor="#040C18",
-    font=dict(family="DM Sans, sans-serif", color="#7A9BAD", size=12),
-    legend=dict(
-        bgcolor="rgba(4,12,24,0.92)", bordercolor="rgba(0,140,255,0.15)",
-        borderwidth=1, font=dict(size=11, family="DM Sans, sans-serif", color="#8AABB8"),
-    ),
-    margin=dict(l=60, r=30, t=55, b=55),
-    hoverlabel=dict(
-        bgcolor="#040C18", bordercolor="rgba(72,202,228,0.4)",
-        font=dict(family="Space Mono, monospace", size=11, color="#48CAE4"),
-    ),
-)
+# ── PLOTLY LAYOUT HELPER ────────────────────────────────────
+# update_layout() bisa menerima **kwargs, tapi nested dict (legend, margin, dll)
+# harus diberikan sebagai keyword args biasa — tidak boleh nested dict conflict.
+# Solusi: gunakan fungsi apply_layout() yang memanggil update_layout item per item.
+
+def apply_layout(fig, **kwargs):
+    """
+    Terapkan PTPL base styling + kwargs tambahan ke fig.update_layout().
+    Menghindari TypeError saat **PTPL di-unpack bersamaan dengan kwargs
+    yang mengandung key yang sama (misal: legend, margin).
+    """
+    base = dict(
+        paper_bgcolor="rgba(3,7,15,0)",
+        plot_bgcolor="#040C18",
+        font=dict(family="DM Sans, sans-serif", color="#7A9BAD", size=12),
+        legend=dict(
+            bgcolor="rgba(4,12,24,0.92)", bordercolor="rgba(0,140,255,0.15)",
+            borderwidth=1, font=dict(size=11, family="DM Sans, sans-serif", color="#8AABB8"),
+        ),
+        margin=dict(l=60, r=30, t=55, b=55),
+        hoverlabel=dict(
+            bgcolor="#040C18", bordercolor="rgba(72,202,228,0.4)",
+            font=dict(family="Space Mono, monospace", size=11, color="#48CAE4"),
+        ),
+    )
+    # kwargs override base untuk key yang sama
+    base.update(kwargs)
+    fig.update_layout(**base)
+    return fig
+
+# Alias agar kompatibel dengan pemanggilan lama
+PTPL = {}   # tidak dipakai langsung lagi
 
 def axis_style(title="", fmt=""):
     d = dict(
@@ -455,9 +473,7 @@ with tab1:
                     opacity=0.5, annotation_text="Batas Prediksi (2025)",
                     annotation_font_color=GREEN, annotation_font_size=10)
 
-    fig_m.update_layout(
-        **PTPL,
-        height=480,
+    apply_layout(fig_m, height=480,
         title=dict(text="Model ODE Pertumbuhan Penduduk Kota Medan (2020–2030)",
                    font=dict(size=14, color=WHITE, family="Syne, sans-serif"), x=0.01),
         xaxis={**axis_style("Tahun"), "range": [2019, 2031]},
@@ -593,8 +609,7 @@ with tab2:
                     line_width=1, opacity=0.5,
                     annotation_text="Batas Prediksi (2024)",
                     annotation_font_color=AMBER, annotation_font_size=10)
-    fig_t.update_layout(
-        **PTPL, height=460,
+    apply_layout(fig_t, height=460,
         title=dict(text="Model ODE Pertumbuhan Penduduk Kota Tual (2020–2030) · Replikasi Jurnal",
                    font=dict(size=14, color=WHITE, family="Syne, sans-serif"), x=0.01),
         xaxis={**axis_style("Tahun"), "range": [2019, 2031]},
@@ -698,8 +713,7 @@ with tab3:
                       annotation_text="2025", annotation_font_color=GREEN)
     fig_rel.add_vline(x=2024, line_dash="dash", line_color=CYAN, line_width=1, opacity=0.4,
                       annotation_text="2024", annotation_font_color=CYAN)
-    fig_rel.update_layout(
-        **PTPL, height=420,
+    apply_layout(fig_rel, height=420,
         title=dict(text="Pertumbuhan Relatif (2020 = 100%) · Medan vs Tual",
                    font=dict(size=14, color=WHITE, family="Syne, sans-serif"), x=0.01),
         xaxis={**axis_style("Tahun"), "range": [2019, 2031]},
@@ -745,8 +759,7 @@ with tab3:
                     line=dict(color=WHITE, width=1.5)),
     ), secondary_y=True)
 
-    fig_dual.update_layout(
-        **PTPL, height=440,
+    apply_layout(fig_dual, height=440,
         title=dict(text="Populasi Absolut Medan (kiri) vs Tual (kanan) · 2020–2030",
                    font=dict(size=14, color=WHITE, family="Syne, sans-serif"), x=0.01),
         xaxis={**axis_style("Tahun"), "range": [2019, 2031]},
@@ -831,8 +844,7 @@ with tab3:
     fig_bar.add_hline(y=TUAL_K*100, line_dash="dash", line_color=CYAN,
                       opacity=0.6, annotation_text=f"k Tual={TUAL_K*100:.2f}%",
                       annotation_font_color=CYAN, annotation_font_size=10)
-    fig_bar.update_layout(
-        **PTPL, height=380, barmode="group",
+    apply_layout(fig_bar, height=380, barmode="group",
         title=dict(text="Laju Pertumbuhan Tahunan Aktual (%)",
                    font=dict(size=14, color=WHITE, family="Syne, sans-serif"), x=0.01),
         xaxis={**axis_style("Tahun")},
@@ -898,8 +910,7 @@ with tab4:
     ))
     fig_num.add_vline(x=t0_yr + (2025 - t0_yr), line_dash="dot",
                       line_color=MUTED, opacity=0.4)
-    fig_num.update_layout(
-        **PTPL, height=440,
+    apply_layout(fig_num, height=440,
         title=dict(text=f"Solusi Numerik vs Analitik · {lbl} · k={k_num:.4f} · Δt={dt_ui}",
                    font=dict(size=14, color=WHITE, family="Syne, sans-serif"), x=0.01),
         xaxis={**axis_style("Tahun"), "range": [t0_yr - 0.5, t0_yr + t_end + 0.5]},
@@ -922,8 +933,7 @@ with tab4:
             marker=dict(color=AMBER, size=6),
             fill="tozeroy", fillcolor="rgba(244,162,97,0.07)",
         ))
-        fig_e1.update_layout(
-            **PTPL, height=280,
+        apply_layout(fig_e1, height=280,
             title=dict(text="Error Euler (%)", font=dict(size=12, color=WHITE), x=0.01),
             xaxis=axis_style("Tahun"), yaxis=axis_style("Error (%)", ".6f"),
             margin=dict(l=50, r=20, t=40, b=40),
@@ -939,8 +949,7 @@ with tab4:
             marker=dict(color=clr, size=6),
             fill="tozeroy", fillcolor=f"rgba(72,202,228,0.07)",
         ))
-        fig_e2.update_layout(
-            **PTPL, height=280,
+        apply_layout(fig_e2, height=280,
             title=dict(text="Error RK4 (%)", font=dict(size=12, color=WHITE), x=0.01),
             xaxis=axis_style("Tahun"), yaxis=axis_style("Error (%)", ".2e"),
             margin=dict(l=50, r=20, t=40, b=40),
