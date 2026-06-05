@@ -30,208 +30,167 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;700;800&family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap');
 
 html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
-
-/* ── BACKGROUND: Langit Medan + Siluet Kota ── */
 .stApp {
-    color: #1A2E3B;
-    background-color: #C9E8F5;
+    color: #D6E4F0;
+    background-color: #87CEEB;
     background-image:
-        /* Awan tipis kiri */
-        radial-gradient(ellipse 45% 18% at 12% 8%, rgba(255,255,255,0.85) 0%, transparent 70%),
-        /* Awan tipis kanan */
-        radial-gradient(ellipse 35% 14% at 78% 5%, rgba(255,255,255,0.75) 0%, transparent 70%),
+        /* Awan kiri */
+        radial-gradient(ellipse 40% 16% at 10% 7%, rgba(255,255,255,0.88) 0%, transparent 70%),
+        /* Awan kanan */
+        radial-gradient(ellipse 30% 12% at 75% 5%, rgba(255,255,255,0.80) 0%, transparent 70%),
         /* Awan kecil tengah */
-        radial-gradient(ellipse 20% 10% at 48% 4%, rgba(255,255,255,0.6) 0%, transparent 70%),
-        /* Cahaya matahari dari kanan atas — nuansa Medan siang cerah */
-        radial-gradient(ellipse 55% 45% at 95% 0%, rgba(255,220,100,0.22) 0%, transparent 65%),
+        radial-gradient(ellipse 18% 9% at 48% 3%, rgba(255,255,255,0.65) 0%, transparent 70%),
+        /* Cahaya matahari siang tropis dari kanan atas */
+        radial-gradient(ellipse 50% 40% at 100% 0%, rgba(255,230,80,0.18) 0%, transparent 60%),
         /* Gradasi langit biru cerah ke bawah */
         linear-gradient(180deg,
-            #87CEEB 0%,
-            #B0DCEF 28%,
-            #D4EDF8 50%,
-            #E8F6FB 68%,
-            /* Baris gedung/horizon Medan — abu kebiruan */
-            #C5D8E2 69%,
-            #1E4A6A 70%,
-            #CCDDE6 72%,
-            #C0D2DC 73%,
-            /* Jalan & area bawah — abu keputihan terang */
-            #D8E8EF 74%,
-            #EAF3F7 80%,
-            #F0F7FA 100%
+            #5BB8E8 0%,
+            #87CEEB 22%,
+            #B0DCEF 42%,
+            #D4EDF8 58%,
+            #E8F5FB 68%,
+            /* Siluet horizon gedung Medan */
+            #C0D4DE 69%, #AABFCC 70%,
+            #BDCED8 71%, #C8D9E2 72%,
+            #AABFCC 73%, #C2D4DE 74%,
+            /* Jalanan & tanah */
+            #D5E6EE 75%,
+            #E8F3F8 82%,
+            #EFF8FC 100%
         );
-    /* Siluet gedung Medan sebagai pseudo-skyline dengan SVG inline di ::before */
 }
 
-/* Lapisan skyline kota Medan (gedung-gedung) */
+/* Siluet skyline kota Medan di atas background */
 .stApp::before {
     content: '';
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 220px;
+    height: 200px;
     pointer-events: none;
     z-index: 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 220' preserveAspectRatio='xMidYMax slice'%3E%3C!-- Gedung-gedung siluet Medan --%3E%3Crect x='0' y='130' width='80' height='90' fill='%23A8BEC8' rx='2'/%3E%3Crect x='10' y='100' width='40' height='120' fill='%2398B0BC' rx='2'/%3E%3Crect x='25' y='80' width='18' height='20' fill='%2398B0BC'/%3E%3Crect x='60' y='110' width='55' height='110' fill='%23B0C5CF' rx='2'/%3E%3Crect x='115' y='90' width='30' height='130' fill='%2390A8B5' rx='2'/%3E%3Crect x='118' y='78' width='24' height='14' fill='%2390A8B5'/%3E%3Crect x='128' y='68' width='4' height='12' fill='%2378909C'/%3E%3Crect x='145' y='105' width='50' height='115' fill='%23A5BFCA' rx='2'/%3E%3Crect x='155' y='88' width='30' height='18' fill='%23A5BFCA'/%3E%3Crect x='195' y='120' width='40' height='100' fill='%23B8CEDA' rx='2'/%3E%3Crect x='235' y='85' width='60' height='135' fill='%2388A5B2' rx='2'/%3E%3Crect x='248' y='68' width='34' height='18' fill='%2388A5B2'/%3E%3Crect x='263' y='55' width='5' height='15' fill='%2368909C'/%3E%3Crect x='295' y='100' width='45' height='120' fill='%23A0B8C5' rx='2'/%3E%3Crect x='340' y='115' width='35' height='105' fill='%23AABFCC' rx='2'/%3E%3Crect x='375' y='78' width='70' height='142' fill='%238AAAB8' rx='2'/%3E%3Crect x='388' y='60' width='44' height='20' fill='%238AAAB8'/%3E%3Crect x='407' y='48' width='6' height='14' fill='%236A8A98'/%3E%3Crect x='445' y='108' width='40' height='112' fill='%23B2C8D5' rx='2'/%3E%3Crect x='485' y='90' width='55' height='130' fill='%2395B0BE' rx='2'/%3E%3Crect x='497' y='75' width='31' height='16' fill='%2395B0BE'/%3E%3Crect x='540' y='125' width='38' height='95' fill='%23BACCDA' rx='2'/%3E%3Crect x='578' y='70' width='65' height='150' fill='%2382A0AF' rx='2'/%3E%3Crect x='590' y='50' width='41' height='22' fill='%2382A0AF'/%3E%3Crect x='608' y='36' width='6' height='16' fill='%2362808F'/%3E%3Crect x='643' y='100' width='45' height='120' fill='%23A8BFCC' rx='2'/%3E%3Crect x='688' y='88' width='52' height='132' fill='%2390AABC' rx='2'/%3E%3Crect x='700' y='72' width='28' height='17' fill='%2390AABC'/%3E%3Crect x='740' y='118' width='38' height='102' fill='%23B5C8D5' rx='2'/%3E%3Crect x='778' y='80' width='60' height='140' fill='%2385A5B5' rx='2'/%3E%3Crect x='790' y='62' width='36' height='19' fill='%2385A5B5'/%3E%3Crect x='806' y='48' width='5' height='16' fill='%2365858F'/%3E%3Crect x='838' y='105' width='42' height='115' fill='%23AABCCA' rx='2'/%3E%3Crect x='880' y='92' width='50' height='128' fill='%2398B5C2' rx='2'/%3E%3Crect x='930' y='115' width='35' height='105' fill='%23B0C5D0' rx='2'/%3E%3Crect x='965' y='75' width='68' height='145' fill='%237E9EAE' rx='2'/%3E%3Crect x='977' y='57' width='44' height='19' fill='%237E9EAE'/%3E%3Crect x='996' y='42' width='6' height='17' fill='%235E7E8E'/%3E%3Crect x='1033' y='108' width='40' height='112' fill='%23AABDCB' rx='2'/%3E%3Crect x='1073' y='88' width='55' height='132' fill='%2392B0C0' rx='2'/%3E%3Crect x='1085' y='70' width='31' height='19' fill='%2392B0C0'/%3E%3Crect x='1128' y='120' width='38' height='100' fill='%23B8CBDA' rx='2'/%3E%3Crect x='1166' y='82' width='62' height='138' fill='%2380A2B2' rx='2'/%3E%3Crect x='1178' y='64' width='38' height='19' fill='%2380A2B2'/%3E%3Crect x='1195' y='50' width='5' height='16' fill='%2360828E'/%3E%3Crect x='1228' y='100' width='44' height='120' fill='%23A8BFCD' rx='2'/%3E%3Crect x='1272' y='110' width='38' height='110' fill='%23B0C4D2' rx='2'/%3E%3Crect x='1310' y='85' width='55' height='135' fill='%238DAFC0' rx='2'/%3E%3Crect x='1322' y='68' width='31' height='18' fill='%238DAFC0'/%3E%3Crect x='1365' y='118' width='40' height='102' fill='%23BAC8D5' rx='2'/%3E%3Crect x='1405' y='90' width='35' height='130' fill='%2398B0BE' rx='2'/%3E%3C!-- Jalanan / tanah --%3E%3Crect x='0' y='210' width='1440' height='10' fill='%23C8D8E2'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 200' preserveAspectRatio='xMidYMax slice'%3E%3Crect x='0' y='130' width='70' height='70' fill='%23A8BBC6' rx='1'/%3E%3Crect x='10' y='105' width='35' height='95' fill='%2398AEBB' rx='1'/%3E%3Crect x='24' y='95' width='8' height='12' fill='%2398AEBB'/%3E%3Crect x='60' y='115' width='50' height='85' fill='%23AABFCA' rx='1'/%3E%3Crect x='110' y='92' width='28' height='108' fill='%2390A5B2' rx='1'/%3E%3Crect x='113' y='80' width='22' height='14' fill='%2390A5B2'/%3E%3Crect x='122' y='70' width='4' height='12' fill='%2378909C'/%3E%3Crect x='138' y='108' width='48' height='92' fill='%23A3B8C5' rx='1'/%3E%3Crect x='148' y='92' width='28' height='17' fill='%23A3B8C5'/%3E%3Crect x='186' y='122' width='36' height='78' fill='%23B5CAD5' rx='1'/%3E%3Crect x='222' y='88' width='58' height='112' fill='%2386A2B0' rx='1'/%3E%3Crect x='234' y='72' width='34' height='17' fill='%2386A2B0'/%3E%3Crect x='249' y='58' width='5' height='16' fill='%2366828E'/%3E%3Crect x='280' y='102' width='42' height='98' fill='%239EB5C2' rx='1'/%3E%3Crect x='322' y='118' width='32' height='82' fill='%23A8BDCA' rx='1'/%3E%3Crect x='354' y='80' width='65' height='120' fill='%2388A8B6' rx='1'/%3E%3Crect x='366' y='62' width='41' height='19' fill='%2388A8B6'/%3E%3Crect x='384' y='50' width='6' height='14' fill='%2368888E'/%3E%3Crect x='419' y='110' width='38' height='90' fill='%23B0C5D2' rx='1'/%3E%3Crect x='457' y='92' width='52' height='108' fill='%2393AEBE' rx='1'/%3E%3Crect x='469' y='76' width='28' height='17' fill='%2393AEBE'/%3E%3Crect x='509' y='126' width='36' height='74' fill='%23B8CADA' rx='1'/%3E%3Crect x='545' y='72' width='62' height='128' fill='%2380A0AF' rx='1'/%3E%3Crect x='557' y='54' width='38' height='19' fill='%2380A0AF'/%3E%3Crect x='574' y='40' width='5' height='16' fill='%2360808F'/%3E%3Crect x='607' y='102' width='43' height='98' fill='%23A5BCCA' rx='1'/%3E%3Crect x='650' y='90' width='50' height='110' fill='%238EAABC' rx='1'/%3E%3Crect x='662' y='74' width='26' height='17' fill='%238EAABC'/%3E%3Crect x='700' y='120' width='36' height='80' fill='%23B3C6D4' rx='1'/%3E%3Crect x='736' y='82' width='58' height='118' fill='%2383A3B3' rx='1'/%3E%3Crect x='748' y='64' width='34' height='19' fill='%2383A3B3'/%3E%3Crect x='763' y='50' width='5' height='16' fill='%2363838F'/%3E%3Crect x='794' y='106' width='40' height='94' fill='%23A8BAC8' rx='1'/%3E%3Crect x='834' y='94' width='48' height='106' fill='%2396B2C0' rx='1'/%3E%3Crect x='882' y='116' width='33' height='84' fill='%23AEBFCE' rx='1'/%3E%3Crect x='915' y='77' width='65' height='123' fill='%237C9CAC' rx='1'/%3E%3Crect x='927' y='59' width='41' height='19' fill='%237C9CAC'/%3E%3Crect x='945' y='44' width='6' height='17' fill='%235C7C8C'/%3E%3Crect x='980' y='110' width='38' height='90' fill='%23A8BAC8' rx='1'/%3E%3Crect x='1018' y='90' width='53' height='110' fill='%2390AEBE' rx='1'/%3E%3Crect x='1030' y='72' width='29' height='19' fill='%2390AEBE'/%3E%3Crect x='1071' y='122' width='36' height='78' fill='%23B6C8D8' rx='1'/%3E%3Crect x='1107' y='84' width='60' height='116' fill='%237EA0B0' rx='1'/%3E%3Crect x='1119' y='66' width='36' height='19' fill='%237EA0B0'/%3E%3Crect x='1135' y='52' width='5' height='16' fill='%235E808C'/%3E%3Crect x='1167' y='98' width='42' height='102' fill='%23A6BCCA' rx='1'/%3E%3Crect x='1209' y='112' width='36' height='88' fill='%23AEBFCC' rx='1'/%3E%3Crect x='1245' y='86' width='53' height='114' fill='%238BAFC0' rx='1'/%3E%3Crect x='1257' y='68' width='29' height='19' fill='%238BAFC0'/%3E%3Crect x='1298' y='120' width='38' height='80' fill='%23B8C8D6' rx='1'/%3E%3Crect x='1336' y='88' width='52' height='112' fill='%2396B0BF' rx='1'/%3E%3Crect x='1388' y='108' width='52' height='92' fill='%23A0B5C2' rx='1'/%3E%3Crect x='0' y='196' width='1440' height='4' fill='%23BDD0DA'/%3E%3C/svg%3E");
     background-size: 100% 100%;
     background-repeat: no-repeat;
     background-position: bottom;
-    opacity: 0.55;
+    opacity: 0.5;
 }
 
-/* Pastikan konten di atas layer skyline */
+/* Pastikan konten utama di atas skyline */
 .main .block-container { position: relative; z-index: 1; }
 
 [data-testid="stSidebar"] {
-    background: linear-gradient(180deg, rgba(200,230,248,0.97) 0%, rgba(215,238,252,0.97) 100%);
-    border-right: 1px solid rgba(30,120,180,0.18);
+    background: linear-gradient(180deg, #6BB8D8 0%, #50A8CC 100%);
+    border-right: 1px solid rgba(0,140,255,0.20);
 }
-[data-testid="stSidebar"] * { color: #1E4A6A !important; }
-
+[data-testid="stSidebar"] * { color: #B8CDD8 !important; }
 [data-testid="metric-container"] {
-    background: linear-gradient(145deg, rgba(255,255,255,0.92) 0%, rgba(232,247,255,0.88) 100%);
-    border: 1px solid rgba(30,140,200,0.22);
-    border-top: 2px solid rgba(0,160,220,0.55);
+    background: linear-gradient(145deg, #060F20 0%, #071525 100%);
+    border: 1px solid rgba(0,140,255,0.18);
+    border-top: 2px solid rgba(0,180,216,0.35);
     border-radius: 10px;
     padding: 16px 18px 12px;
-    box-shadow: 0 2px 12px rgba(30,130,200,0.08);
 }
 [data-testid="metric-container"] label {
-    color: #3A7FA8 !important; font-family: 'Space Mono', monospace !important;
+    color: #4E7A96 !important; font-family: 'Space Mono', monospace !important;
     font-size: 9px !important; letter-spacing: 2px; text-transform: uppercase;
 }
 [data-testid="metric-container"] [data-testid="stMetricValue"] {
-    color: #0277A8 !important; font-family: 'Syne', sans-serif !important;
+    color: #48CAE4 !important; font-family: 'Syne', sans-serif !important;
     font-size: 20px !important; font-weight: 700 !important;
 }
 [data-testid="metric-container"] [data-testid="stMetricDelta"] {
-    color: #1A9E6A !important; font-family: 'Space Mono', monospace !important;
+    color: #52B788 !important; font-family: 'Space Mono', monospace !important;
     font-size: 10px !important;
 }
-
 .stTabs [data-baseweb="tab-list"] {
-    background: rgba(255,255,255,0.78) !important;
-    border-bottom: 2px solid rgba(0,140,200,0.2) !important;
+    background: rgba(6,15,32,0.8) !important;
+    border-bottom: 1px solid rgba(0,140,255,0.12) !important;
     gap: 2px !important; padding: 0 4px !important;
-    backdrop-filter: blur(6px);
 }
 .stTabs [data-testid="stTab"] button {
     font-family: 'Syne', sans-serif !important; font-size: 12px !important;
-    font-weight: 600 !important; color: #4A90A8 !important;
+    font-weight: 600 !important; color: #4E7A96 !important;
     border-radius: 6px 6px 0 0 !important; padding: 10px 14px !important;
 }
 .stTabs [data-testid="stTab"] button[aria-selected="true"] {
-    color: #0277A8 !important; border-bottom: 2px solid #0277A8 !important;
-    background: rgba(0,150,200,0.10) !important;
+    color: #48CAE4 !important; border-bottom: 2px solid #48CAE4 !important;
+    background: rgba(0,180,216,0.07) !important;
 }
-
 div.stButton > button {
-    background: rgba(255,255,255,0.85) !important; color: #0277A8 !important;
-    border: 1px solid rgba(0,150,200,0.45) !important; border-radius: 6px !important;
+    background: transparent !important; color: #48CAE4 !important;
+    border: 1px solid rgba(0,180,216,0.4) !important; border-radius: 6px !important;
     font-family: 'Space Mono', monospace !important; font-size: 11px !important;
     letter-spacing: 0.8px; padding: 7px 16px !important;
-    box-shadow: 0 1px 6px rgba(0,140,200,0.12);
 }
-
-/* HERO — langit pagi Medan cerah */
 .hero {
-    background: linear-gradient(135deg,
-        rgba(135,206,235,0.55) 0%,
-        rgba(200,235,252,0.72) 45%,
-        rgba(255,255,255,0.80) 100%
-    );
-    border: 1px solid rgba(0,160,220,0.28);
-    border-radius: 14px;
-    padding: 32px 40px;
-    margin-bottom: 24px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 4px 24px rgba(0,130,200,0.10);
-    backdrop-filter: blur(4px);
+    background: linear-gradient(135deg, #060F1F 0%, #071828 60%, #060F1F 100%);
+    border: 1px solid rgba(0,140,255,0.2); border-radius: 14px;
+    padding: 32px 40px; margin-bottom: 24px; position: relative; overflow: hidden;
 }
 .hero::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg,
-        transparent 0%, #0277A8 20%, #0277A8 40%,
-        #22D3EE 60%, #34D399 80%, transparent 100%
-    );
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent 0%, #0096C7 30%, #48CAE4 50%, #52B788 70%, transparent 100%);
 }
-/* Ornamen awan di sudut kanan hero */
-.hero::after {
-    content: '';
-    position: absolute; top: 10px; right: 20px; width: 180px; height: 60px;
-    background:
-        radial-gradient(ellipse 60% 40% at 70% 50%, rgba(255,255,255,0.7) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 35% at 30% 60%, rgba(255,255,255,0.5) 0%, transparent 70%);
-    pointer-events: none;
-}
-
 .hero-title {
     font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800;
-    color: #0D3A52; margin: 0 0 8px; letter-spacing: -1px; line-height: 1.2;
-    text-shadow: 0 1px 8px rgba(255,255,255,0.6);
+    color: #E8F4F8; margin: 0 0 8px; letter-spacing: -1px; line-height: 1.2;
 }
-.hero-title span.cyan { color: #0277A8; }
-.hero-title span.green { color: #059669; }
-.hero-sub { font-size: 13px; color: #2A6080; line-height: 1.7; max-width: 700px; }
-
+.hero-title span.cyan { color: #48CAE4; }
+.hero-title span.green { color: #52B788; }
+.hero-sub { font-size: 13px; color: #5A8099; line-height: 1.7; max-width: 700px; }
 .badge {
     display: inline-flex; align-items: center;
-    background: rgba(0,150,200,0.12); border: 1px solid rgba(0,150,200,0.30);
+    background: rgba(0,150,199,0.1); border: 1px solid rgba(0,150,199,0.22);
     border-radius: 4px; padding: 3px 10px;
-    font-family: 'Space Mono', monospace; font-size: 9px; color: #0277A8;
+    font-family: 'Space Mono', monospace; font-size: 9px; color: #48CAE4;
     margin-right: 6px; margin-top: 4px;
 }
-.badge-green { background: rgba(5,150,105,0.10); border-color: rgba(5,150,105,0.28); color: #059669; }
-.badge-amber { background: rgba(217,119,6,0.10); border-color: rgba(217,119,6,0.28); color: #D97706; }
-
+.badge-green { background: rgba(82,183,136,0.1); border-color: rgba(82,183,136,0.22); color: #52B788; }
+.badge-amber { background: rgba(244,162,97,0.1); border-color: rgba(244,162,97,0.22); color: #F4A261; }
 .section-label {
-    font-family: 'Space Mono', monospace; font-size: 9px; color: #0277A8;
+    font-family: 'Space Mono', monospace; font-size: 9px; color: #0096C7;
     letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 14px;
-    padding-bottom: 10px; border-bottom: 2px solid rgba(0,150,200,0.18);
+    padding-bottom: 10px; border-bottom: 1px solid rgba(0,140,255,0.12);
 }
-
 .info-card {
-    background: rgba(255,255,255,0.72); border: 1px solid rgba(0,140,200,0.18);
-    border-left: 3px solid #0277A8; border-radius: 0 8px 8px 0;
-    padding: 14px 18px; font-size: 13px; color: #2A5570; line-height: 1.85; margin: 8px 0;
-    box-shadow: 0 1px 8px rgba(0,120,180,0.07);
-    backdrop-filter: blur(4px);
+    background: rgba(0,150,199,0.04); border: 1px solid rgba(0,140,255,0.12);
+    border-left: 2px solid #0096C7; border-radius: 0 8px 8px 0;
+    padding: 14px 18px; font-size: 13px; color: #7A9BAD; line-height: 1.85; margin: 8px 0;
 }
-.info-card-green { border-left-color: #059669; }
-.info-card-amber { border-left-color: #D97706; }
-
+.info-card-green {
+    border-left-color: #52B788;
+}
+.info-card-amber {
+    border-left-color: #F4A261;
+}
 .formula-box {
-    background: rgba(240,250,255,0.88); border: 1px solid rgba(0,150,200,0.25);
+    background: #040C18; border: 1px solid rgba(0,140,255,0.18);
     border-radius: 8px; padding: 18px 22px;
     font-family: 'Space Mono', monospace; font-size: 12px;
-    color: #0277A8; text-align: center; line-height: 2.2; margin: 12px 0;
-    box-shadow: inset 0 1px 4px rgba(0,120,200,0.06);
+    color: #48CAE4; text-align: center; line-height: 2.2; margin: 12px 0;
 }
-
 [data-testid="stDataFrame"] {
-    border: 1px solid rgba(0,140,200,0.18) !important;
+    border: 1px solid rgba(0,140,255,0.12) !important;
     border-radius: 8px !important; overflow: hidden !important;
-    box-shadow: 0 1px 8px rgba(0,120,180,0.07) !important;
 }
-
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: rgba(200,230,248,0.4); }
-::-webkit-scrollbar-thumb { background: rgba(0,150,200,0.35); border-radius: 4px; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #03070F; }
+::-webkit-scrollbar-thumb { background: rgba(0,140,255,0.3); border-radius: 4px; }
 </style>
 """, unsafe_allow_html=True)
 
 # ── COLOR PALETTE ────────────────────────────────────────────
-CYAN   = "#0277A8"
-TEAL   = "#0277A8"
-GREEN  = "#059669"
-AMBER  = "#D97706"
-PURPLE = "#7C3AED"
-CORAL  = "#E05252"
-WHITE  = "#0D3A52"
-MUTED  = "#4A7A98"
-ORANGE = "#C2610A"
+CYAN   = "#48CAE4"
+TEAL   = "#00B4D8"
+GREEN  = "#52B788"
+AMBER  = "#F4A261"
+PURPLE = "#A78BFA"
+CORAL  = "#F77F6E"
+WHITE  = "#E8F4F8"
+MUTED  = "#3A6A88"
+ORANGE = "#FB8500"
 
 # ── PLOTLY TEMPLATE ──────────────────────────────────────────
 # ── PLOTLY LAYOUT HELPER ────────────────────────────────────
@@ -246,17 +205,17 @@ def apply_layout(fig, **kwargs):
     yang mengandung key yang sama (misal: legend, margin).
     """
     base = dict(
-        paper_bgcolor="rgba(240,250,255,0)",
-        plot_bgcolor="rgba(248,253,255,0.92)",
-        font=dict(family="DM Sans, sans-serif", color="#2A5570", size=12),
+        paper_bgcolor="rgba(3,7,15,0)",
+        plot_bgcolor="#040C18",
+        font=dict(family="DM Sans, sans-serif", color="#7A9BAD", size=12),
         legend=dict(
-            bgcolor="rgba(255,255,255,0.90)", bordercolor="rgba(0,140,200,0.20)",
-            borderwidth=1, font=dict(size=11, family="DM Sans, sans-serif", color="#2A5570"),
+            bgcolor="rgba(4,12,24,0.92)", bordercolor="rgba(0,140,255,0.15)",
+            borderwidth=1, font=dict(size=11, family="DM Sans, sans-serif", color="#8AABB8"),
         ),
         margin=dict(l=60, r=30, t=55, b=55),
         hoverlabel=dict(
-            bgcolor="rgba(240,252,255,0.97)", bordercolor="rgba(0,150,200,0.4)",
-            font=dict(family="Space Mono, monospace", size=11, color="#0277A8"),
+            bgcolor="#040C18", bordercolor="rgba(72,202,228,0.4)",
+            font=dict(family="Space Mono, monospace", size=11, color="#48CAE4"),
         ),
     )
     # kwargs override base untuk key yang sama
@@ -269,12 +228,11 @@ PTPL = {}   # tidak dipakai langsung lagi
 
 def axis_style(title="", fmt=""):
     d = dict(
-        gridcolor="rgba(0,140,200,0.10)", linecolor="rgba(0,140,200,0.22)",
-        zerolinecolor="rgba(0,140,200,0.15)",
-        tickfont=dict(family="Space Mono, monospace", size=10, color="#4A7A98"),
-        bgcolor="rgba(248,253,255,0.0)",
+        gridcolor="rgba(0,140,255,0.06)", linecolor="rgba(0,140,255,0.15)",
+        zerolinecolor="rgba(0,140,255,0.1)",
+        tickfont=dict(family="Space Mono, monospace", size=10, color="#3A6A88"),
     )
-    if title: d["title"] = dict(text=title, font=dict(size=12, color="#2A5570"))
+    if title: d["title"] = dict(text=title, font=dict(size=12, color="#5A8099"))
     if fmt:   d["tickformat"] = fmt
     return d
 
@@ -355,10 +313,10 @@ _k_medan_jurnal = (1/5) * np.log(MEDAN_POP_HIST[-1] / MEDAN_POP_HIST[0])
 with st.sidebar:
     st.markdown("""
     <div style="padding:14px 0 8px;">
-      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:#0096C7;">
+      <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:#48CAE4;">
         ODE Penduduk
       </div>
-      <div style="font-family:'Space Mono',monospace;font-size:9px;color:#3A7090;letter-spacing:2px;text-transform:uppercase;margin-top:4px;">
+      <div style="font-family:'Space Mono',monospace;font-size:9px;color:#2A5A78;letter-spacing:2px;text-transform:uppercase;margin-top:4px;">
         Medan · Tual · 2025
       </div>
     </div>
@@ -373,7 +331,7 @@ with st.sidebar:
         help=f"Nilai fit dari data BPS: {_k_medan_jurnal:.4f} ({_k_medan_jurnal*100:.2f}%/thn)"
     )
     st.markdown(
-        f"<div style='font-family:Space Mono,monospace;font-size:10px;color:#059669;margin-top:-6px;margin-bottom:10px;'>"
+        f"<div style='font-family:Space Mono,monospace;font-size:10px;color:#52B788;margin-top:-6px;margin-bottom:10px;'>"
         f"→ {k_medan_ui:.4f} = <b>{k_medan_ui*100:.2f}%</b> / tahun</div>",
         unsafe_allow_html=True
     )
@@ -405,12 +363,12 @@ with st.sidebar:
     dt_ui = st.selectbox("Δt langkah numerik (tahun)", [1.0, 0.5, 0.25, 0.1], index=1)
 
     st.markdown("""
-    <div style='font-size:10px;color:#2A6080;line-height:2;font-family:Space Mono,monospace;margin-top:8px;'>
-    <span style='color:#0277A8;letter-spacing:1.5px;'>REFERENSI</span><br>
+    <div style='font-size:10px;color:#1A4060;line-height:2;font-family:Space Mono,monospace;margin-top:8px;'>
+    <span style='color:#0096C7;letter-spacing:1.5px;'>REFERENSI</span><br>
     Armin & Remetwa, M.G.K.<br>
     JIMAT Vol.6 No.1, 2025<br>
     DOI: 10.63976/jimat.v6i1.804<br><br>
-    <span style='color:#0277A8;letter-spacing:1.5px;'>DATA MEDAN</span><br>
+    <span style='color:#0096C7;letter-spacing:1.5px;'>DATA MEDAN</span><br>
     BPS Kota Medan 2020–2025
     </div>
     """, unsafe_allow_html=True)
@@ -418,7 +376,7 @@ with st.sidebar:
 # ── HERO ─────────────────────────────────────────────────────
 st.markdown("""
 <div class="hero">
-  <div style="font-family:'Space Mono',monospace;font-size:9px;color:#0277A8;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;">
+  <div style="font-family:'Space Mono',monospace;font-size:9px;color:#0096C7;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;">
     📐 Pemodelan Persamaan Diferensial · BPS 2020–2025
   </div>
   <div class="hero-title">
@@ -483,8 +441,8 @@ with tab1:
         k = (1/t)·ln(P(t)/P₀)<br>
         k = (1/{int(t5)})·ln({int(MEDAN_POP_HIST[-1]):,} / {int(MEDAN_POP_HIST[0]):,})<br>
         k = (1/{int(t5)})·ln({MEDAN_POP_HIST[-1]/MEDAN_POP_HIST[0]:.5f})<br>
-        k = <span style="color:#059669;font-weight:700;">{_k_medan_jurnal:.5f}</span>
-        &nbsp;≈ <span style="color:#059669;">{_k_medan_jurnal*100:.3f}%/tahun</span>
+        k = <span style="color:#52B788;font-weight:700;">{_k_medan_jurnal:.5f}</span>
+        &nbsp;≈ <span style="color:#52B788;">{_k_medan_jurnal*100:.3f}%/tahun</span>
         </div>
         """, unsafe_allow_html=True)
 
@@ -1065,10 +1023,10 @@ with tab4:
     st.dataframe(df_err, hide_index=True, use_container_width=True)
 
     st.markdown(f"""
-    <div style="background:#EAF5FB;border:1px solid rgba(72,202,228,0.2);border-radius:10px;
+    <div style="background:#040C18;border:1px solid rgba(72,202,228,0.2);border-radius:10px;
     padding:18px 24px;margin-top:8px;font-family:'Space Mono',monospace;font-size:11px;
-    color:#2A6080;line-height:2;">
-      <b style="color:#0D3A52;font-family:Syne,sans-serif;font-size:13px;">
+    color:#5A8099;line-height:2;">
+      <b style="color:#C0D8E8;font-family:Syne,sans-serif;font-size:13px;">
         📋 Kesimpulan Numerik
       </b><br><br>
       <b style="color:{AMBER};">Euler (orde 1):</b> error global O(Δt) — halving Δt → error turun ~2×<br>
@@ -1095,9 +1053,9 @@ with tab5:
     col_a, col_b = st.columns(2)
     with col_a:
         st.markdown("""
-        <div style="background:#E8F4FB;border:1px solid rgba(72,202,228,0.2);border-radius:10px;
+        <div style="background:#060F20;border:1px solid rgba(72,202,228,0.2);border-radius:10px;
         padding:20px 24px;margin-bottom:12px;">
-        <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:#0096C7;margin-bottom:12px;">
+        <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:#48CAE4;margin-bottom:12px;">
             📈 Model Eksponensial
         </div>
         <div class="formula-box" style="margin:0 0 12px;">
@@ -1107,12 +1065,12 @@ with tab5:
             ↓ integrasi kedua sisi<br>
             ln P = k·t + C<br>
             ↓ kondisi awal P(0) = P₀<br>
-            <span style="color:#059669;font-weight:700;">P(t) = P₀ · e^(k·t)</span>
+            <span style="color:#52B788;font-weight:700;">P(t) = P₀ · e^(k·t)</span>
         </div>
-        <div style="font-size:12px;color:#2A6080;line-height:1.8;">
-        <b style="color:#1A4A6A;">Asumsi:</b> laju pertumbuhan sebanding dengan populasi saat ini.<br>
-        <b style="color:#1A4A6A;">Berlaku:</b> jangka pendek, sumber daya tidak terbatas.<br>
-        <b style="color:#1A4A6A;">Parameter k:</b> dihitung dari data empiris:<br>
+        <div style="font-size:12px;color:#5A8099;line-height:1.8;">
+        <b style="color:#8AABB8;">Asumsi:</b> laju pertumbuhan sebanding dengan populasi saat ini.<br>
+        <b style="color:#8AABB8;">Berlaku:</b> jangka pendek, sumber daya tidak terbatas.<br>
+        <b style="color:#8AABB8;">Parameter k:</b> dihitung dari data empiris:<br>
         k = (1/t) · ln(P(t)/P₀)
         </div>
         </div>
@@ -1120,34 +1078,34 @@ with tab5:
 
     with col_b:
         st.markdown("""
-        <div style="background:#E8F4FB;border:1px solid rgba(82,183,136,0.2);border-radius:10px;
+        <div style="background:#060F20;border:1px solid rgba(82,183,136,0.2);border-radius:10px;
         padding:20px 24px;margin-bottom:12px;">
-        <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:#059669;margin-bottom:12px;">
+        <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:#52B788;margin-bottom:12px;">
             📉 Model Logistik (Verhulst)
         </div>
         <div class="formula-box" style="margin:0 0 12px;border-color:rgba(82,183,136,0.3);">
             dP/dt = k · P · (1 − P/K)<br>
             ↓ separasi & integrasi parsial<br>
-            <span style="color:#059669;font-weight:700;">P(t) = K / (1 + ((K−P₀)/P₀) · e^(−kt))</span>
+            <span style="color:#52B788;font-weight:700;">P(t) = K / (1 + ((K−P₀)/P₀) · e^(−kt))</span>
         </div>
-        <div style="font-size:12px;color:#2A6080;line-height:1.8;">
-        <b style="color:#1A4A6A;">K:</b> daya dukung lingkungan (carrying capacity).<br>
-        <b style="color:#1A4A6A;">Jika P ≪ K:</b> tumbuh seperti eksponensial.<br>
-        <b style="color:#1A4A6A;">Jika P → K:</b> pertumbuhan melambat → P stabil di K.<br>
-        <b style="color:#1A4A6A;">Berlaku:</b> jangka panjang, sumber daya terbatas.
+        <div style="font-size:12px;color:#5A8099;line-height:1.8;">
+        <b style="color:#8AABB8;">K:</b> daya dukung lingkungan (carrying capacity).<br>
+        <b style="color:#8AABB8;">Jika P ≪ K:</b> tumbuh seperti eksponensial.<br>
+        <b style="color:#8AABB8;">Jika P → K:</b> pertumbuhan melambat → P stabil di K.<br>
+        <b style="color:#8AABB8;">Berlaku:</b> jangka panjang, sumber daya terbatas.
         </div>
         </div>
         """, unsafe_allow_html=True)
 
     st.markdown("""
-    <div style="background:#E8F4FB;border:1px solid rgba(167,139,250,0.2);border-radius:10px;
+    <div style="background:#060F20;border:1px solid rgba(167,139,250,0.2);border-radius:10px;
     padding:20px 24px;margin-bottom:12px;">
-    <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:#7C3AED;margin-bottom:12px;">
+    <div style="font-family:Syne,sans-serif;font-size:14px;font-weight:700;color:#A78BFA;margin-bottom:12px;">
         🔢 Metode Numerik: Euler & RK4
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
         <div>
-        <div style="font-family:Space Mono,monospace;font-size:10px;color:#7C3AED;letter-spacing:1px;
+        <div style="font-family:Space Mono,monospace;font-size:10px;color:#A78BFA;letter-spacing:1px;
         text-transform:uppercase;margin-bottom:8px;">Euler Eksplisit (Orde 1)</div>
         <div class="formula-box" style="border-color:rgba(167,139,250,0.25);font-size:11px;padding:12px 16px;text-align:left;">
             P_{n+1} = P_n + Δt · f(P_n, t_n)<br>
@@ -1157,7 +1115,7 @@ with tab5:
         </div>
         </div>
         <div>
-        <div style="font-family:Space Mono,monospace;font-size:10px;color:#0096C7;letter-spacing:1px;
+        <div style="font-family:Space Mono,monospace;font-size:10px;color:#48CAE4;letter-spacing:1px;
         text-transform:uppercase;margin-bottom:8px;">Runge-Kutta Orde 4 (RK4)</div>
         <div class="formula-box" style="font-size:11px;padding:12px 16px;text-align:left;">
             k1 = f(P_n, t_n)<br>
@@ -1174,15 +1132,15 @@ with tab5:
 
     # Referensi
     st.markdown("""
-    <div style="background:#EAF5FB;border:1px solid rgba(0,140,255,0.12);border-radius:10px;
-    padding:18px 24px;margin-top:8px;font-size:12px;color:#2A6080;line-height:2;">
-    <b style="color:#0D3A52;font-family:Syne,sans-serif;font-size:13px;">📚 Referensi</b><br><br>
-    <b style="color:#0096C7;">Jurnal Utama:</b><br>
+    <div style="background:#040C18;border:1px solid rgba(0,140,255,0.12);border-radius:10px;
+    padding:18px 24px;margin-top:8px;font-size:12px;color:#5A8099;line-height:2;">
+    <b style="color:#C0D8E8;font-family:Syne,sans-serif;font-size:13px;">📚 Referensi</b><br><br>
+    <b style="color:#48CAE4;">Jurnal Utama:</b><br>
     Armin & Remetwa, M.G.K. (2025). Aplikasi Persamaan Differensial Dengan Pendekatan Model
     Pertumbuhan Eksponensial Untuk Memprediksi Jumlah Penduduk Kota Tual Tahun 2026–2030.
     <i>JIMAT — Jurnal Ilmiah Matematika</i>, Vol.6, No.1, Hal.327–338.
     DOI: 10.63976/jimat.v6i1.804<br><br>
-    <b style="color:#059669;">Data:</b><br>
+    <b style="color:#52B788;">Data:</b><br>
     BPS Kota Medan — Jumlah Penduduk Kota Medan 2020–2025<br>
     BPS Provinsi Maluku — Jumlah Penduduk Kota Tual 2020–2024
     </div>
