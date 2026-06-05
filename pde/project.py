@@ -181,8 +181,8 @@ def apply_layout(fig, **kwargs):
         plot_bgcolor="rgba(255,255,255,0.82)",
         font=dict(family="DM Sans, sans-serif", color="#2A5570", size=12),
         legend=dict(
-            bgcolor="rgba(255,255,255,0.90)", bordercolor="rgba(0,140,200,0.22)",
-            borderwidth=1, font=dict(size=11, family="DM Sans, sans-serif", color="#2A5570"),
+            bgcolor="rgba(255,255,255,0.92)", bordercolor="rgba(0,140,200,0.22)",
+            borderwidth=1, font=dict(size=11, family="DM Sans, sans-serif", color="#0D3A52"),
         ),
         margin=dict(l=60, r=30, t=55, b=55),
         hoverlabel=dict(
