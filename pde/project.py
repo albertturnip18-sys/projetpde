@@ -179,10 +179,10 @@ def apply_layout(fig, **kwargs):
     base = dict(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(255,255,255,0.82)",
-        font=dict(family="DM Sans, sans-serif", color="#2A5570", size=12),
+        font=dict(family="DM Sans, sans-serif", color="#0D2A3A", size=12),
         legend=dict(
-            bgcolor="rgba(255,255,255,0.92)", bordercolor="rgba(0,140,200,0.22)",
-            borderwidth=1, font=dict(size=11, family="DM Sans, sans-serif", color="#0D3A52"),
+            bgcolor="rgba(255,255,255,0.95)", bordercolor="rgba(0,140,200,0.25)",
+            borderwidth=1, font=dict(size=11, family="DM Sans, sans-serif", color="#0D2A3A"),
         ),
         margin=dict(l=60, r=30, t=55, b=55),
         hoverlabel=dict(
@@ -499,7 +499,9 @@ with tab1:
         xaxis={**axis_style("Tahun"), "range": [2019, 2031]},
         yaxis={**axis_style("Jumlah Penduduk (jiwa)", ",d"),
                "range": [min(MEDAN_POP_HIST)*0.97, max(K_medan_ui*1.05, P_exp_full_m.max()*1.03)]},
-        legend=dict(x=0.01, y=0.99),
+        legend=dict(x=0.01, y=0.99, bgcolor="rgba(255,255,255,0.95)",
+                    bordercolor="rgba(0,140,200,0.25)", borderwidth=1,
+                    font=dict(size=11, color="#0D2A3A", family="DM Sans, sans-serif")),
     )
     st.plotly_chart(fig_m, use_container_width=True)
 
