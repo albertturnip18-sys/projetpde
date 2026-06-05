@@ -160,8 +160,8 @@ GREEN  = "#52B788"
 AMBER  = "#F4A261"
 PURPLE = "#A78BFA"
 CORAL  = "#F77F6E"
-WHITE  = "#E8F4F8"
-MUTED  = "#3A6A88"
+WHITE  = "#0D3A52"
+MUTED  = "#6A8FA8"
 ORANGE = "#FB8500"
 
 # ── PLOTLY TEMPLATE ──────────────────────────────────────────
@@ -484,8 +484,9 @@ with tab1:
         fig_m.add_annotation(
             x=yr, y=pop, text=f"{int(pop/1e6):.3f}M",
             showarrow=False, yshift=18,
-            font=dict(color=AMBER, size=9, family="Space Mono"),
-            bgcolor="rgba(13,27,46,0.8)", borderpad=3,
+            font=dict(color="#C2610A", size=9, family="Space Mono"),
+            bgcolor="rgba(255,255,255,0.85)", borderpad=3,
+            bordercolor="rgba(194,97,10,0.35)", borderwidth=1,
         )
 
     fig_m.add_vline(x=2025, line_dash="dash", line_color=GREEN, line_width=1,
@@ -621,8 +622,9 @@ with tab2:
         fig_t.add_annotation(
             x=yr, y=pop, text=f"{int(pop):,}",
             showarrow=False, yshift=18,
-            font=dict(color=AMBER, size=9, family="Space Mono"),
-            bgcolor="rgba(13,27,46,0.8)", borderpad=3,
+            font=dict(color="#C2610A", size=9, family="Space Mono"),
+            bgcolor="rgba(255,255,255,0.85)", borderpad=3,
+            bordercolor="rgba(194,97,10,0.35)", borderwidth=1,
         )
     fig_t.add_vline(x=2024, line_dash="dash", line_color=AMBER,
                     line_width=1, opacity=0.5,
