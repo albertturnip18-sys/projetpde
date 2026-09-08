@@ -1,15 +1,29 @@
 """
 Deutschsprung – Dein spielerischer Weg von A1 zu A2
-Streamlit port dari deutschsprung-1.html
+Streamlit app (revisi v2)
 
-Struktur aplikasi:
-  1. Konfigurasi halaman & data (vocab, grammar, quiz)
+Perubahan besar pada revisi ini:
+  - Fix bug: reset kartu vocab (flipped) tiap ganti kategori
+  - Fix bug: filter level A1/A2 tidak lagi "bocor" menampilkan level lain
+  - Fix bug: logout memakai st.session_state.clear() (reset total)
+  - Fitur baru: Audio pengucapan (gTTS) di setiap kartu kosakata
+  - Fitur baru: Modul latihan konjugasi verba (sein, haben, lernen, fahren)
+  - Fitur baru: Dashboard progres (kosakata dilihat & skor quiz tertinggi)
+  - UX: navigasi halaman berbasis tombol (pill nav), grid kartu lebih rapi,
+        badge/alert umpan balik saat quiz dijawab
+
+Struktur file:
+  1. Konfigurasi halaman & data (vocab, grammar, verbs, questions)
   2. Session state
-  3. CSS kustom (meniru palet warna & font versi HTML)
-  4. Layar login (simulasi, sama seperti versi asli)
-  5. Bagian aplikasi utama: nav, hero, vocab, grammar, quiz, footer
-  6. Router sederhana berbasis st.session_state
+  3. Util: TTS (gTTS) helper
+  4. CSS kustom
+  5. Layar login (simulasi)
+  6. Nav atas + dashboard progres
+  7. Bagian: hero, vocab, grammar, verben, quiz, footer
+  8. Router berbasis st.session_state.page
 """
+
+import io
 
 import streamlit as st
 
@@ -24,7 +38,7 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------------------
-# DATA — dipindahkan 1:1 dari objek `vocab`, `grammar`, `questions` di JS asli
+# DATA
 # ---------------------------------------------------------------------------
 VOCAB = {
     "Begrüßung": [
@@ -85,6 +99,30 @@ GRAMMAR = [
      "ex": "Ich sehe den Gast."},
 ]
 
+# Data konjugasi verba dasar A1-A2 (untuk modul latihan baru)
+VERBS = {
+    "sein": {
+        "meaning": "menjadi / berada (to be)",
+        "conj": {"ich": "bin", "du": "bist", "er/sie/es": "ist",
+                  "wir": "sind", "ihr": "seid", "sie/Sie": "sind"},
+    },
+    "haben": {
+        "meaning": "memiliki (to have)",
+        "conj": {"ich": "habe", "du": "hast", "er/sie/es": "hat",
+                  "wir": "haben", "ihr": "habt", "sie/Sie": "haben"},
+    },
+    "lernen": {
+        "meaning": "belajar (to learn)",
+        "conj": {"ich": "lerne", "du": "lernst", "er/sie/es": "lernt",
+                  "wir": "lernen", "ihr": "lernt", "sie/Sie": "lernen"},
+    },
+    "fahren": {
+        "meaning": "berkendara / pergi (to drive / go)",
+        "conj": {"ich": "fahre", "du": "fährst", "er/sie/es": "fährt",
+                  "wir": "fahren", "ihr": "fahrt", "sie/Sie": "fahren"},
+    },
+}
+
 QUESTIONS = [
     {"q": "Wie sagt man 'terima kasih' auf Deutsch?",
      "opts": ["Bitte", "Danke", "Tschüss", "Hallo"], "a": 1},
@@ -104,6 +142,17 @@ QUESTIONS = [
      "opts": ["kunci", "kamar", "tamu", "resepsionis"], "a": 2},
 ]
 
+PAGES = ["beranda", "vokabeln", "grammatik", "verben", "quiz"]
+PAGE_LABELS = {
+    "beranda": "🏠 Beranda",
+    "vokabeln": "🗂️ Vokabeln",
+    "grammatik": "📘 Grammatik",
+    "verben": "🔤 Verben",
+    "quiz": "📝 Quiz",
+}
+
+TOTAL_VOCAB = sum(len(v) for v in VOCAB.values())
+
 # ---------------------------------------------------------------------------
 # 2. SESSION STATE
 # ---------------------------------------------------------------------------
@@ -111,13 +160,20 @@ _DEFAULTS = {
     "logged_in": False,
     "username": "",
     "level": "A1",                       # "A1" | "A2"
+    "page": "beranda",                   # halaman aktif (nav pill)
     "current_cat": list(VOCAB.keys())[0],
-    "flipped": {},                       # {card_key: bool}
+    "flipped": {},                       # {card_key: bool} — direset tiap ganti kategori
+    "viewed_vocab": set(),               # kata (de) yang pernah dibuka terjemahannya
+    "audio_cache": {},                   # {card_key: bytes mp3}
     "q_index": 0,
     "q_score": 0,
     "q_selected": None,
     "q_answered": False,
     "q_done": False,
+    "q_high_score": 0,
+    "verb_choice": list(VERBS.keys())[0],
+    "verb_best": {},                     # {verb: skor_terbaik}
+    "verb_result": None,                 # hasil cek terakhir (untuk ditampilkan)
 }
 for _k, _v in _DEFAULTS.items():
     if _k not in st.session_state:
@@ -132,8 +188,33 @@ def reset_quiz():
     st.session_state.q_done = False
 
 
+def go_to(page: str):
+    st.session_state.page = page
+
+
 # ---------------------------------------------------------------------------
-# 3. CSS KUSTOM — meniru palet & font dari deutschsprung-1.html
+# 3. UTIL — Text-to-Speech (gTTS)
+# ---------------------------------------------------------------------------
+@st.cache_data(show_spinner=False, ttl=3600)
+def generate_tts_audio(text: str):
+    """Menghasilkan audio MP3 (bytes) untuk teks bahasa Jerman.
+
+    Mengembalikan None jika gTTS tidak tersedia / gagal (mis. tidak ada
+    koneksi internet), agar UI tetap berjalan tanpa error.
+    """
+    try:
+        from gtts import gTTS  # import lokal agar app tetap jalan tanpa gTTS
+
+        buf = io.BytesIO()
+        gTTS(text=text, lang="de").write_to_fp(buf)
+        buf.seek(0)
+        return buf.read()
+    except Exception:
+        return None
+
+
+# ---------------------------------------------------------------------------
+# 4. CSS KUSTOM
 # ---------------------------------------------------------------------------
 def inject_css():
     st.markdown(
@@ -197,19 +278,26 @@ def inject_css():
         .st-key-login_card .stButton > button[kind="primary"] { background:var(--ink) !important; color:var(--paper) !important; border-color:var(--ink) !important; }
 
         /* ---------- Nav / top bar ---------- */
-        .topnav { display:flex; align-items:center; justify-content:space-between; padding:10px 0 16px; border-bottom:1px solid var(--line); margin-bottom:18px; }
+        .topnav { display:flex; align-items:center; justify-content:space-between; padding:10px 0 16px; border-bottom:1px solid var(--line); margin-bottom:14px; }
         .brand { display:flex; align-items:center; gap:9px; font-weight:700; font-size:1.1rem; font-family:'Space Grotesk',sans-serif; }
         .user-chip { display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:600; }
         .avatar { width:28px; height:28px; border-radius:50%; background:var(--mustard); color:var(--ink); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.82rem; flex-shrink:0; }
+
+        /* ---------- Dashboard progres ---------- */
+        div[data-testid="stMetric"] {
+            background:rgba(242,236,221,0.06); border:1px solid var(--line);
+            border-radius:12px; padding:10px 14px;
+        }
+        div[data-testid="stMetricLabel"] { color:rgba(242,236,221,0.75) !important; }
+        div[data-testid="stMetricValue"] { color:var(--mustard) !important; }
+
+        /* ---------- Page pill nav ---------- */
+        .st-key-page_nav .stButton > button { padding:0.4rem 0.85rem; font-size:0.85rem; }
 
         /* ---------- Hero ---------- */
         .hero-title { font-size:clamp(2.1rem, 6vw, 3.4rem); font-weight:700; line-height:1.08; margin:6px 0 14px; }
         .hero-title .accent { color:var(--mustard); }
         .hero-desc { color:rgba(242,236,221,0.85); font-size:1.05rem; max-width:34em; margin-bottom:22px; }
-        .cta-link { display:block; text-align:center; padding:13px 22px; border-radius:8px; font-weight:600; text-decoration:none; font-family:'Inter',sans-serif; font-size:0.95rem; transition:transform .15s ease; }
-        .cta-link:hover { transform:translateY(-2px); }
-        .cta-primary { background:var(--mustard); color:var(--ink); }
-        .cta-ghost { background:transparent; color:var(--paper); border:1px solid var(--line); }
 
         /* ---------- Section heading umum ---------- */
         .section-head h2 { font-size:clamp(1.4rem,3.2vw,1.9rem); font-weight:700; margin-bottom:6px; }
@@ -233,6 +321,15 @@ def inject_css():
         .g-text { color:rgba(242,236,221,0.8); font-size:0.92rem; margin-bottom:8px; }
         .g-ex { font-family:'Space Grotesk',sans-serif; font-size:0.92rem; border-left:3px solid var(--teal); padding-left:10px; }
 
+        /* ---------- Verben (modul baru) ---------- */
+        .st-key-verb_wrap { background:var(--paper) !important; border:none !important; border-radius:16px; padding:1.6rem 1.4rem; color:var(--ink); }
+        .st-key-verb_wrap .section-head p { color:rgba(27,36,48,0.7); }
+        .verb-meaning { color:rgba(27,36,48,0.65); font-size:0.92rem; margin-bottom:10px; }
+        .verb-row { padding:10px 14px; border-radius:10px; margin-bottom:8px; font-size:0.92rem; border:1.5px solid rgba(27,36,48,0.15); }
+        .verb-row.correct { background:rgba(58,125,123,0.18); border-color:var(--teal); }
+        .verb-row.wrong { background:rgba(193,68,14,0.14); border-color:var(--brick); }
+        .verb-best { display:inline-block; background:var(--mustard); color:var(--ink); font-weight:700; font-size:0.78rem; padding:3px 10px; border-radius:999px; margin-left:8px; }
+
         /* ---------- Quiz (section terang berisi kotak gelap) ---------- */
         .st-key-quiz_wrap { background:var(--paper) !important; border:none !important; border-radius:16px; padding:1.6rem 1.4rem; color:var(--ink); }
         .st-key-quiz_wrap .section-head p { color:rgba(27,36,48,0.7); }
@@ -247,6 +344,16 @@ def inject_css():
         .big-score { font-family:'Space Grotesk',sans-serif; font-size:2.2rem; font-weight:700; color:var(--mustard); text-align:center; }
         .quiz-done-caption { text-align:center; color:rgba(242,236,221,0.7); font-size:0.9rem; }
 
+        /* ---------- Badge umpan balik (feedback) ---------- */
+        .badge-success, .badge-error {
+            display:block; text-align:center; font-weight:700; font-size:0.95rem;
+            padding:10px 16px; border-radius:12px; margin-bottom:14px;
+            animation: pop-in .25s ease;
+        }
+        .badge-success { background:rgba(58,125,123,0.28); border:1.5px solid var(--teal); color:var(--paper); }
+        .badge-error { background:rgba(193,68,14,0.24); border:1.5px solid var(--brick); color:var(--paper); }
+        @keyframes pop-in { from { transform:scale(0.92); opacity:0; } to { transform:scale(1); opacity:1; } }
+
         /* ---------- Footer ---------- */
         .app-footer { text-align:center; color:rgba(242,236,221,0.5); font-size:0.85rem; padding-top:28px; margin-top:20px; border-top:1px solid var(--line); }
         </style>
@@ -256,7 +363,7 @@ def inject_css():
 
 
 # ---------------------------------------------------------------------------
-# 4. LAYAR LOGIN (simulasi — sama seperti versi HTML asli, tanpa backend)
+# 5. LAYAR LOGIN (simulasi — sama seperti versi HTML asli, tanpa backend)
 # ---------------------------------------------------------------------------
 def login_screen():
     st.markdown(
@@ -309,7 +416,7 @@ def login_screen():
 
 
 # ---------------------------------------------------------------------------
-# 5. BAGIAN APLIKASI UTAMA
+# 6. NAV ATAS + DASHBOARD PROGRES
 # ---------------------------------------------------------------------------
 def top_nav():
     initial = st.session_state.username[:1].upper() if st.session_state.username else "?"
@@ -326,6 +433,18 @@ def top_nav():
         unsafe_allow_html=True,
     )
 
+    # --- Dashboard progres ---
+    m1, m2, m3 = st.columns(3)
+    with m1:
+        st.metric("Kosakata Dilihat", f"{len(st.session_state.viewed_vocab)}/{TOTAL_VOCAB}")
+    with m2:
+        st.metric("Skor Quiz Tertinggi", f"{st.session_state.q_high_score}/{len(QUESTIONS)}")
+    with m3:
+        st.metric("Level Aktif", st.session_state.level)
+
+    st.write("")
+
+    # --- Kontrol level + logout ---
     c1, c2, c3, c4 = st.columns([1, 1, 2, 1.2])
     with c1:
         if st.button("A1", key="lvl_a1", type="primary" if st.session_state.level == "A1" else "secondary",
@@ -339,45 +458,65 @@ def top_nav():
             st.rerun()
     with c4:
         if st.button("Abmelden", key="logout_btn", use_container_width=True):
-            st.session_state.logged_in = False
-            st.session_state.username = ""
+            st.session_state.clear()   # reset total seluruh sesi (fix bug logout)
             st.rerun()
 
+    # --- Pill nav antar halaman ---
+    with st.container(key="page_nav"):
+        nav_cols = st.columns(len(PAGES))
+        for col, pg in zip(nav_cols, PAGES):
+            with col:
+                if st.button(PAGE_LABELS[pg], key=f"nav_{pg}",
+                             type="primary" if st.session_state.page == pg else "secondary",
+                             use_container_width=True):
+                    go_to(pg)
+                    st.rerun()
+    st.write("")
 
+
+# ---------------------------------------------------------------------------
+# 7. BAGIAN APLIKASI UTAMA
+# ---------------------------------------------------------------------------
 def hero_section():
     st.markdown('<div class="eyebrow">Deine Deutschreise beginnt hier</div>', unsafe_allow_html=True)
     st.markdown(
         """
         <h1 class="hero-title">Von <span class="accent">Null</span> auf Deutsch –
         <span class="accent">Schritt</span> für Schritt.</h1>
-        <p class="hero-desc">Vokabeln, Grammatik und ein kleines Quiz für die Niveaus A1 und A2.
-        Kein Auswendiglernen ohne Sinn – nur klare Häppchen, die wirklich hängen bleiben.</p>
+        <p class="hero-desc">Vokabeln, Grammatik, Verbkonjugation und ein kleines Quiz für die Niveaus
+        A1 und A2. Kein Auswendiglernen ohne Sinn – nur klare Häppchen, die wirklich hängen bleiben.</p>
         """,
         unsafe_allow_html=True,
     )
-    c1, c2 = st.columns(2)
+    c1, c2, c3 = st.columns(3)
     with c1:
-        st.markdown('<a href="#vokabeln" class="cta-link cta-primary">Vokabeln entdecken</a>',
-                     unsafe_allow_html=True)
+        if st.button("🗂️ Vokabeln entdecken", key="cta_vocab", type="primary", use_container_width=True):
+            go_to("vokabeln")
+            st.rerun()
     with c2:
-        st.markdown('<a href="#quiz" class="cta-link cta-ghost">Quiz starten</a>', unsafe_allow_html=True)
+        if st.button("🔤 Verben üben", key="cta_verben", use_container_width=True):
+            go_to("verben")
+            st.rerun()
+    with c3:
+        if st.button("📝 Quiz starten", key="cta_quiz", use_container_width=True):
+            go_to("quiz")
+            st.rerun()
     st.write("")
 
 
 def vocab_section():
-    st.markdown('<div id="vokabeln"></div>', unsafe_allow_html=True)
     with st.container(key="vocab_wrap"):
         st.markdown(
             """
             <div class="section-head">
               <h2>Vokabelkarten</h2>
-              <p>Klick auf eine Karte, um die Übersetzung zu sehen. Wechsle die Kategorie nach Interesse.</p>
+              <p>Klick auf eine Karte, um die Übersetzung zu sehen, und höre dir die Aussprache an.</p>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-        # --- Tab kategori (wrap 3 per baris, mirip flex-wrap di versi asli) ---
+        # --- Tab kategori (wrap 3 per baris) ---
         cats = list(VOCAB.keys())
         per_row = 3
         for row_start in range(0, len(cats), per_row):
@@ -388,20 +527,34 @@ def vocab_section():
                     is_active = cat == st.session_state.current_cat
                     if st.button(cat, key=f"cat_{cat}", type="primary" if is_active else "secondary",
                                  use_container_width=True):
-                        st.session_state.current_cat = cat
+                        if cat != st.session_state.current_cat:
+                            st.session_state.current_cat = cat
+                            # FIX BUG: reset kartu ke posisi depan tiap ganti kategori
+                            st.session_state.flipped = {}
                         st.rerun()
 
         st.write("")
 
-        # --- Grid kartu, difilter berdasarkan level aktif (logika sama seperti JS asli) ---
-        items = [v for v in VOCAB[st.session_state.current_cat]
-                 if st.session_state.level == "A2" or v["lvl"] == "A1"]
+        # --- Grid kartu, difilter murni berdasarkan level aktif ---
+        # FIX BUG: A1 hanya menampilkan A1; A2 menampilkan A1+A2 (tanpa fallback
+        # yang membocorkan level lain saat suatu kategori kosong di A1).
+        all_items = VOCAB[st.session_state.current_cat]
+        if st.session_state.level == "A1":
+            items = [v for v in all_items if v["lvl"] == "A1"]
+        else:
+            items = list(all_items)  # A2 = gabungan A1 + A2
+
         if not items:
-            items = VOCAB[st.session_state.current_cat]
+            st.info(
+                f"Belum ada kosakata level A1 di kategori **{st.session_state.current_cat}**. "
+                "Coba beralih ke level A2 di atas. 👆"
+            )
+            return
 
         card_cols = st.columns(3)
         for idx, item in enumerate(items):
-            card_key = f"{st.session_state.current_cat}_{idx}".replace(" ", "_").replace("&", "und")
+            safe_cat = st.session_state.current_cat.replace(" ", "_").replace("&", "und")
+            card_key = f"{safe_cat}_{item['de']}".replace(" ", "_").replace(",", "").replace("'", "")
             flipped = st.session_state.flipped.get(card_key, False)
             side = "b" if flipped else "f"
             with card_cols[idx % 3]:
@@ -413,14 +566,30 @@ def vocab_section():
                             f'<div class="card-front">{item["de"]}<span class="card-tag">{item["lvl"]}</span></div>',
                             unsafe_allow_html=True,
                         )
-                    label = "↺ Kembali" if flipped else "↺ Terjemahan"
-                    if st.button(label, key=f"flip_{card_key}", use_container_width=True):
-                        st.session_state.flipped[card_key] = not flipped
-                        st.rerun()
+
+                    fc1, fc2 = st.columns([2, 1])
+                    with fc1:
+                        label = "↺ Kembali" if flipped else "↺ Terjemahan"
+                        if st.button(label, key=f"flip_{card_key}", use_container_width=True):
+                            new_state = not flipped
+                            st.session_state.flipped[card_key] = new_state
+                            if new_state:
+                                # Progress tracker: catat kata yang sudah dibuka
+                                st.session_state.viewed_vocab.add(item["de"])
+                            st.rerun()
+                    with fc2:
+                        if st.button("🔊", key=f"audio_{card_key}", use_container_width=True,
+                                      help="Dengarkan pengucapan"):
+                            st.session_state.audio_cache[card_key] = generate_tts_audio(item["de"])
+
+                    audio_bytes = st.session_state.audio_cache.get(card_key)
+                    if audio_bytes:
+                        st.audio(audio_bytes, format="audio/mp3")
+                    elif card_key in st.session_state.audio_cache:
+                        st.caption("🔇 Audio tidak tersedia (periksa koneksi internet)")
 
 
 def grammar_section():
-    st.markdown('<div id="grammatik"></div>', unsafe_allow_html=True)
     st.markdown(
         """
         <div class="section-head">
@@ -446,8 +615,93 @@ def grammar_section():
     st.write("")
 
 
+def verb_section():
+    with st.container(key="verb_wrap"):
+        st.markdown(
+            """
+            <div class="section-head">
+              <h2>Verbkonjugation üben</h2>
+              <p>Wähle ein Verb und fülle die richtige Präsensform für jedes Pronomen aus.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        verb_names = list(VERBS.keys())
+        choice = st.selectbox(
+            "Verb auswählen", verb_names,
+            index=verb_names.index(st.session_state.verb_choice),
+            key="verb_choice_select",
+        )
+        if choice != st.session_state.verb_choice:
+            st.session_state.verb_choice = choice
+            st.session_state.verb_result = None
+            st.rerun()
+
+        verb_data = VERBS[choice]
+        best = st.session_state.verb_best.get(choice)
+        best_html = f'<span class="verb-best">Rekor: {best}/6</span>' if best is not None else ""
+        st.markdown(
+            f'<div class="verb-meaning"><b>{choice}</b> — {verb_data["meaning"]} {best_html}</div>',
+            unsafe_allow_html=True,
+        )
+
+        pronouns = list(verb_data["conj"].keys())
+        with st.form(f"verb_form_{choice}"):
+            cols = st.columns(2)
+            inputs = {}
+            for i, pron in enumerate(pronouns):
+                with cols[i % 2]:
+                    inputs[pron] = st.text_input(f"{pron} ___", key=f"verb_in_{choice}_{pron}",
+                                                  placeholder="Konjugation eingeben")
+            submitted = st.form_submit_button("✅ Cek Jawaban", type="primary", use_container_width=True)
+
+        if submitted:
+            correct_count = 0
+            rows_html = ""
+            for pron in pronouns:
+                user_ans = (inputs[pron] or "").strip().lower()
+                correct_ans = verb_data["conj"][pron].lower()
+                if user_ans == correct_ans:
+                    correct_count += 1
+                    rows_html += (
+                        f'<div class="verb-row correct">✅ <b>{pron}</b> {verb_data["conj"][pron]} — Benar!</div>'
+                    )
+                else:
+                    shown = inputs[pron] or "(kosong)"
+                    rows_html += (
+                        f'<div class="verb-row wrong">❌ <b>{pron}</b> — jawabanmu: "{shown}", '
+                        f'yang benar: <b>{verb_data["conj"][pron]}</b></div>'
+                    )
+            st.markdown(rows_html, unsafe_allow_html=True)
+
+            total = len(pronouns)
+            prev_best = st.session_state.verb_best.get(choice, 0)
+            st.session_state.verb_best[choice] = max(prev_best, correct_count)
+
+            if correct_count == total:
+                st.markdown(
+                    f'<div class="badge-success">🎉 Sempurna! {correct_count}/{total} benar untuk "{choice}".</div>',
+                    unsafe_allow_html=True,
+                )
+                st.balloons()
+            elif correct_count >= total * 0.5:
+                st.markdown(
+                    f'<div class="badge-success">👍 Bagus! {correct_count}/{total} benar.</div>',
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.markdown(
+                    f'<div class="badge-error">💪 Terus berlatih! {correct_count}/{total} benar.</div>',
+                    unsafe_allow_html=True,
+                )
+
+        with st.expander("📋 Lihat tabel konjugasi lengkap"):
+            for pron, form in verb_data["conj"].items():
+                st.markdown(f"- **{pron}** → {form}")
+
+
 def quiz_section():
-    st.markdown('<div id="quiz"></div>', unsafe_allow_html=True)
     with st.container(key="quiz_wrap"):
         st.markdown(
             """
@@ -477,6 +731,20 @@ def quiz_section():
                                 st.session_state.q_score += 1
                             st.rerun()
                 else:
+                    # --- Umpan balik visual (badge) ---
+                    is_correct = st.session_state.q_selected == item["a"]
+                    if is_correct:
+                        st.markdown(
+                            '<div class="badge-success">✅ Richtig! Sehr gut gemacht.</div>',
+                            unsafe_allow_html=True,
+                        )
+                    else:
+                        st.markdown(
+                            f'<div class="badge-error">❌ Nicht ganz. Richtige Antwort: '
+                            f'{item["opts"][item["a"]]}</div>',
+                            unsafe_allow_html=True,
+                        )
+
                     for i, opt in enumerate(item["opts"]):
                         if i == item["a"]:
                             cls = "correct"
@@ -491,6 +759,8 @@ def quiz_section():
                     if st.button(next_label, key="next_q", type="primary", use_container_width=True):
                         if is_last:
                             st.session_state.q_done = True
+                            if st.session_state.q_score > st.session_state.q_high_score:
+                                st.session_state.q_high_score = st.session_state.q_score
                         else:
                             st.session_state.q_index += 1
                             st.session_state.q_answered = False
@@ -503,6 +773,18 @@ def quiz_section():
                 st.markdown(f'<div class="big-score">{st.session_state.q_score} / {len(QUESTIONS)}</div>',
                              unsafe_allow_html=True)
                 st.markdown('<p class="quiz-done-caption">Richtige Antworten von 8</p>', unsafe_allow_html=True)
+
+                score_ratio = st.session_state.q_score / len(QUESTIONS)
+                if score_ratio == 1.0:
+                    st.success("🏆 Luar biasa! Kamu meraih skor sempurna!")
+                    st.balloons()
+                elif score_ratio >= 0.75:
+                    st.info("👍 Hasil yang sangat baik, terus pertahankan!")
+                elif score_ratio >= 0.5:
+                    st.warning("🙂 Lumayan! Coba ulangi untuk skor lebih tinggi.")
+                else:
+                    st.warning("💪 Tetap semangat, latihan lagi yuk!")
+
                 st.write("")
                 if st.button("Nochmal versuchen", key="restart_quiz", type="primary", use_container_width=True):
                     reset_quiz()
@@ -515,7 +797,7 @@ def footer():
 
 
 # ---------------------------------------------------------------------------
-# 6. ROUTER
+# 8. ROUTER
 # ---------------------------------------------------------------------------
 inject_css()
 
@@ -523,10 +805,18 @@ if not st.session_state.logged_in:
     login_screen()
 else:
     top_nav()
-    hero_section()
-    vocab_section()
+
+    page = st.session_state.page
+    if page == "beranda":
+        hero_section()
+    elif page == "vokabeln":
+        vocab_section()
+    elif page == "grammatik":
+        grammar_section()
+    elif page == "verben":
+        verb_section()
+    elif page == "quiz":
+        quiz_section()
+
     st.write("")
-    grammar_section()
-    st.write("")
-    quiz_section()
     footer()
