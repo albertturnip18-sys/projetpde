@@ -6,24 +6,27 @@ Perubahan besar pada revisi ini:
   - Fix bug: reset kartu vocab (flipped) tiap ganti kategori
   - Fix bug: filter level A1/A2 tidak lagi "bocor" menampilkan level lain
   - Fix bug: logout memakai st.session_state.clear() (reset total)
-  - Fitur baru: Audio pengucapan (gTTS) di setiap kartu kosakata
+  - Fitur baru: Kartu kosakata dilengkapi contoh kalimat + tips mnemonic,
+        dan tombol "Tandai Hafal" (mastery tracker) — menggantikan audio TTS
+        yang sebelumnya bergantung pada koneksi internet ke Google.
   - Fitur baru: Modul latihan konjugasi verba (sein, haben, lernen, fahren)
-  - Fitur baru: Dashboard progres (kosakata dilihat & skor quiz tertinggi)
-  - UX: navigasi halaman berbasis tombol (pill nav), grid kartu lebih rapi,
-        badge/alert umpan balik saat quiz dijawab
+  - Fitur baru: Dashboard progres (kosakata dikuasai/dilihat & skor quiz)
+  - UX: landing page baru (highlight fitur, tip harian, kartu navigasi,
+        ringkasan progres), navigasi berbasis tombol (pill nav), grid kartu
+        lebih rapi, badge/alert umpan balik saat quiz & latihan verba dijawab
 
 Struktur file:
-  1. Konfigurasi halaman & data (vocab, grammar, verbs, questions)
+  1. Konfigurasi halaman & data (vocab, grammar, verbs, questions, tips)
   2. Session state
-  3. Util: TTS (gTTS) helper
+  3. Data tambahan (tip harian)
   4. CSS kustom
   5. Layar login (simulasi)
   6. Nav atas + dashboard progres
-  7. Bagian: hero, vocab, grammar, verben, quiz, footer
+  7. Bagian: hero (landing), vocab, grammar, verben, quiz, footer
   8. Router berbasis st.session_state.page
 """
 
-import io
+import random
 
 import streamlit as st
 
@@ -42,39 +45,64 @@ st.set_page_config(
 # ---------------------------------------------------------------------------
 VOCAB = {
     "Begrüßung": [
-        {"de": "Hallo", "id": "Halo", "lvl": "A1"},
-        {"de": "Guten Morgen", "id": "Selamat pagi", "lvl": "A1"},
-        {"de": "Tschüss", "id": "Sampai jumpa", "lvl": "A1"},
-        {"de": "Danke", "id": "Terima kasih", "lvl": "A1"},
-        {"de": "Entschuldigung", "id": "Maaf / Permisi", "lvl": "A1"},
-        {"de": "Wie geht's?", "id": "Apa kabar?", "lvl": "A1"},
+        {"de": "Hallo", "id": "Halo", "lvl": "A1",
+         "ex": "Hallo, wie heißt du?", "tip": "Sapaan paling umum, cocok untuk siapa saja."},
+        {"de": "Guten Morgen", "id": "Selamat pagi", "lvl": "A1",
+         "ex": "Guten Morgen, Frau Schmidt!", "tip": "Dipakai sampai sekitar jam 10-11 pagi."},
+        {"de": "Tschüss", "id": "Sampai jumpa", "lvl": "A1",
+         "ex": "Tschüss, bis morgen!", "tip": "Versi santai dari 'Auf Wiedersehen'."},
+        {"de": "Danke", "id": "Terima kasih", "lvl": "A1",
+         "ex": "Danke für deine Hilfe.", "tip": "Tambahkan 'sehr' → 'Danke sehr' untuk lebih sopan."},
+        {"de": "Entschuldigung", "id": "Maaf / Permisi", "lvl": "A1",
+         "ex": "Entschuldigung, wo ist der Bahnhof?", "tip": "Dua fungsi: minta maaf & menyapa orang asing."},
+        {"de": "Wie geht's?", "id": "Apa kabar?", "lvl": "A1",
+         "ex": "Wie geht's? – Mir geht's gut, danke!", "tip": "Singkatan santai dari 'Wie geht es dir?'."},
     ],
     "Zahlen & Farben": [
-        {"de": "eins, zwei, drei", "id": "satu, dua, tiga", "lvl": "A1"},
-        {"de": "zehn", "id": "sepuluh", "lvl": "A1"},
-        {"de": "rot", "id": "merah", "lvl": "A1"},
-        {"de": "blau", "id": "biru", "lvl": "A1"},
-        {"de": "gelb", "id": "kuning", "lvl": "A1"},
+        {"de": "eins, zwei, drei", "id": "satu, dua, tiga", "lvl": "A1",
+         "ex": "Ich zähle: eins, zwei, drei.", "tip": "Fondasi semua angka bahasa Jerman."},
+        {"de": "zehn", "id": "sepuluh", "lvl": "A1",
+         "ex": "Ich habe zehn Finger.", "tip": "Angka 11-19 biasanya berakhiran '-zehn'."},
+        {"de": "rot", "id": "merah", "lvl": "A1",
+         "ex": "Die Ampel ist rot.", "tip": "Ingat lewat warna lampu lalu lintas."},
+        {"de": "blau", "id": "biru", "lvl": "A1",
+         "ex": "Der Himmel ist blau.", "tip": "Mirip kata Inggris 'blue', mudah diingat."},
+        {"de": "gelb", "id": "kuning", "lvl": "A1",
+         "ex": "Die Banane ist gelb.", "tip": "Bayangkan pisang kuning agar cepat melekat."},
     ],
     "Familie": [
-        {"de": "die Mutter", "id": "ibu", "lvl": "A1"},
-        {"de": "der Vater", "id": "ayah", "lvl": "A1"},
-        {"de": "die Schwester", "id": "saudari perempuan", "lvl": "A1"},
-        {"de": "der Bruder", "id": "saudara laki-laki", "lvl": "A1"},
-        {"de": "das Kind", "id": "anak", "lvl": "A1"},
+        {"de": "die Mutter", "id": "ibu", "lvl": "A1",
+         "ex": "Meine Mutter kocht gern.", "tip": "Anggota keluarga perempuan sering pakai artikel 'die'."},
+        {"de": "der Vater", "id": "ayah", "lvl": "A1",
+         "ex": "Mein Vater arbeitet viel.", "tip": "Anggota keluarga laki-laki sering pakai artikel 'der'."},
+        {"de": "die Schwester", "id": "saudari perempuan", "lvl": "A1",
+         "ex": "Ich habe eine Schwester.", "tip": "'Schwester' mirip 'sister' dalam bahasa Inggris."},
+        {"de": "der Bruder", "id": "saudara laki-laki", "lvl": "A1",
+         "ex": "Mein Bruder ist älter als ich.", "tip": "'Bruder' mirip 'brother' dalam bahasa Inggris."},
+        {"de": "das Kind", "id": "anak", "lvl": "A1",
+         "ex": "Das Kind spielt im Park.", "tip": "'Kind' selalu netral (das), meski merujuk siapa saja."},
     ],
     "Im Hotel": [
-        {"de": "die Rezeption", "id": "resepsionis", "lvl": "A2"},
-        {"de": "das Zimmer", "id": "kamar", "lvl": "A2"},
-        {"de": "der Gast", "id": "tamu", "lvl": "A2"},
-        {"de": "der Schlüssel", "id": "kunci", "lvl": "A2"},
-        {"de": "die Buchung", "id": "pemesanan", "lvl": "A2"},
+        {"de": "die Rezeption", "id": "resepsionis", "lvl": "A2",
+         "ex": "Die Rezeption ist im Erdgeschoss.", "tip": "Mirip kata 'resepsi/reception' dalam bahasa Indonesia/Inggris."},
+        {"de": "das Zimmer", "id": "kamar", "lvl": "A2",
+         "ex": "Mein Zimmer hat die Nummer 12.", "tip": "Kata dasar untuk semua jenis ruangan/kamar."},
+        {"de": "der Gast", "id": "tamu", "lvl": "A2",
+         "ex": "Der Gast wartet an der Rezeption.", "tip": "Mirip kata 'guest' dalam bahasa Inggris."},
+        {"de": "der Schlüssel", "id": "kunci", "lvl": "A2",
+         "ex": "Wo ist mein Schlüssel?", "tip": "Bayangkan bentuk kunci saat mengucapkan 'Schlüssel'."},
+        {"de": "die Buchung", "id": "pemesanan", "lvl": "A2",
+         "ex": "Ich habe eine Buchung für zwei Nächte.", "tip": "Berasal dari kata 'buchen' (memesan)."},
     ],
     "Alltag & Zeit": [
-        {"de": "heute", "id": "hari ini", "lvl": "A2"},
-        {"de": "morgen", "id": "besok", "lvl": "A2"},
-        {"de": "pünktlich", "id": "tepat waktu", "lvl": "A2"},
-        {"de": "die Verabredung", "id": "janji temu", "lvl": "A2"},
+        {"de": "heute", "id": "hari ini", "lvl": "A2",
+         "ex": "Heute ist ein schöner Tag.", "tip": "Kata waktu paling sering dipakai sehari-hari."},
+        {"de": "morgen", "id": "besok", "lvl": "A2",
+         "ex": "Morgen fahre ich nach Berlin.", "tip": "Huruf kecil = 'besok'; huruf besar 'Morgen' = kata benda 'pagi'."},
+        {"de": "pünktlich", "id": "tepat waktu", "lvl": "A2",
+         "ex": "Der Zug kommt pünktlich.", "tip": "Ciri khas budaya Jerman: sangat menghargai ketepatan waktu."},
+        {"de": "die Verabredung", "id": "janji temu", "lvl": "A2",
+         "ex": "Ich habe eine Verabredung um 15 Uhr.", "tip": "Berasal dari kata 'sich verabreden' (membuat janji)."},
     ],
 }
 
@@ -164,7 +192,8 @@ _DEFAULTS = {
     "current_cat": list(VOCAB.keys())[0],
     "flipped": {},                       # {card_key: bool} — direset tiap ganti kategori
     "viewed_vocab": set(),               # kata (de) yang pernah dibuka terjemahannya
-    "audio_cache": {},                   # {card_key: bytes mp3}
+    "mastered_vocab": set(),             # kata (de) yang ditandai "sudah hafal"
+    "daily_tip_idx": None,               # index tip harian (diacak sekali per sesi)
     "q_index": 0,
     "q_score": 0,
     "q_selected": None,
@@ -193,49 +222,17 @@ def go_to(page: str):
 
 
 # ---------------------------------------------------------------------------
-# 3. UTIL — Text-to-Speech (gTTS)
+# 3. DATA TAMBAHAN — Tip harian untuk landing page
 # ---------------------------------------------------------------------------
-def _fetch_tts_audio(text: str):
-    """Helper murni (tanpa cache) — melakukan panggilan gTTS sesungguhnya.
-
-    gTTS BUTUH KONEKSI INTERNET karena ia memanggil endpoint
-    translate.google.com untuk menghasilkan audio. Jika jaringan tempat
-    aplikasi berjalan tidak bisa mengakses domain tersebut (firewall
-    kantor/kampus, proxy, atau sandbox tanpa akses keluar), permintaan ini
-    akan selalu gagal — ini bukan bug di kode, melainkan keterbatasan
-    jaringan. Mengembalikan (bytes_audio_atau_None, pesan_error_atau_None).
-    """
-    try:
-        from gtts import gTTS
-    except ImportError:
-        return None, "Library gTTS belum terpasang. Jalankan: pip install gTTS"
-
-    try:
-        buf = io.BytesIO()
-        gTTS(text=text, lang="de").write_to_fp(buf)
-        buf.seek(0)
-        return buf.read(), None
-    except Exception as e:  # noqa: BLE001 — kita ingin menampilkan pesan asli ke user
-        return None, f"{type(e).__name__}: {e}"
-
-
-@st.cache_data(show_spinner=False, ttl=3600)
-def _fetch_tts_audio_cached(text: str):
-    """Versi cache — HANYA dipanggil saat percobaan berhasil (lihat generate_tts_audio)."""
-    return _fetch_tts_audio(text)
-
-
-def generate_tts_audio(text: str):
-    """Menghasilkan audio MP3 (bytes) untuk teks bahasa Jerman.
-
-    Mengembalikan (bytes_audio_atau_None, pesan_error_atau_None).
-    Hasil GAGAL sengaja tidak dicache, supaya tombol "🔁 Coba lagi" bisa
-    langsung mencoba ulang tanpa perlu menunggu TTL cache habis.
-    """
-    audio_bytes, error = _fetch_tts_audio(text)
-    if audio_bytes is not None:
-        return _fetch_tts_audio_cached(text)  # simpan ke cache jalur sukses
-    return audio_bytes, error
+DAILY_TIPS = [
+    "Buat 3 kalimat sendiri dengan kosakata yang baru kamu pelajari hari ini.",
+    "Ulangi kosakata yang sudah 'Dikuasai' seminggu sekali agar tidak lupa.",
+    "Fokus satu kategori dulu sebelum pindah ke kategori berikutnya.",
+    "Latihan konjugasi verba 5 menit tiap hari lebih efektif daripada sekali seminggu.",
+    "Ucapkan kosakata dengan lantang — otot mulutmu juga perlu latihan!",
+    "Coba tulis buku harian singkat pakai kosakata yang sudah kamu kuasai.",
+    "Salah itu wajar. Fokus pada progres, bukan kesempurnaan.",
+]
 
 
 # ---------------------------------------------------------------------------
@@ -369,6 +366,26 @@ def inject_css():
         .big-score { font-family:'Space Grotesk',sans-serif; font-size:2.2rem; font-weight:700; color:var(--mustard); text-align:center; }
         .quiz-done-caption { text-align:center; color:rgba(242,236,221,0.7); font-size:0.9rem; }
 
+        /* ---------- Landing page (Beranda) ---------- */
+        .why-card { text-align:center; padding:4px 2px; }
+        .why-icon { font-size:1.7rem; margin-bottom:6px; }
+        .why-title { font-weight:700; font-family:'Space Grotesk',sans-serif; font-size:0.95rem; margin-bottom:4px; }
+        .why-desc { font-size:0.82rem; opacity:0.8; }
+        .tip-of-day { background:rgba(232,169,59,0.12); border:1.5px solid var(--mustard); border-radius:12px; padding:14px 16px; margin:18px 0; }
+        .tip-of-day .tip-label { color:var(--mustard); font-weight:700; font-size:0.82rem; margin-bottom:4px; }
+        .feature-icon { font-size:1.5rem; margin-bottom:4px; }
+        .feature-title { font-weight:700; font-family:'Space Grotesk',sans-serif; font-size:1.02rem; margin-bottom:4px; }
+        .feature-desc { font-size:0.85rem; opacity:0.82; margin-bottom:10px; min-height:2.6em; }
+        .progress-snapshot { background:rgba(58,125,123,0.14); border:1.5px solid var(--teal); border-radius:12px; padding:14px 16px; margin:18px 0; }
+        .progress-snapshot b { color:var(--mustard); }
+
+        /* ---------- Kartu vocab: tandai hafal ---------- */
+        div[class*="st-key-vcard_f_m1_"], div[class*="st-key-vcard_b_m1_"] {
+            border-color:var(--mustard) !important; box-shadow:0 0 0 2px rgba(232,169,59,0.35) inset;
+        }
+        .mastered-badge { display:inline-block; background:var(--mustard); color:var(--ink); font-size:0.68rem; font-weight:700; padding:2px 9px; border-radius:999px; margin-left:6px; vertical-align:middle; }
+        .card-example { font-size:0.82rem; opacity:0.85; margin-top:6px; font-style:italic; }
+
         /* ---------- Badge umpan balik (feedback) ---------- */
         .badge-success, .badge-error {
             display:block; text-align:center; font-weight:700; font-size:0.95rem;
@@ -461,11 +478,11 @@ def top_nav():
     # --- Dashboard progres ---
     m1, m2, m3 = st.columns(3)
     with m1:
-        st.metric("Kosakata Dilihat", f"{len(st.session_state.viewed_vocab)}/{TOTAL_VOCAB}")
+        st.metric("Kosakata Dikuasai", f"{len(st.session_state.mastered_vocab)}/{TOTAL_VOCAB}")
     with m2:
-        st.metric("Skor Quiz Tertinggi", f"{st.session_state.q_high_score}/{len(QUESTIONS)}")
+        st.metric("Kosakata Dilihat", f"{len(st.session_state.viewed_vocab)}/{TOTAL_VOCAB}")
     with m3:
-        st.metric("Level Aktif", st.session_state.level)
+        st.metric("Skor Quiz Tertinggi", f"{st.session_state.q_high_score}/{len(QUESTIONS)}")
 
     st.write("")
 
@@ -503,29 +520,96 @@ def top_nav():
 # 7. BAGIAN APLIKASI UTAMA
 # ---------------------------------------------------------------------------
 def hero_section():
+    # --- Hero utama ---
     st.markdown('<div class="eyebrow">Deine Deutschreise beginnt hier</div>', unsafe_allow_html=True)
     st.markdown(
-        """
+        f"""
         <h1 class="hero-title">Von <span class="accent">Null</span> auf Deutsch –
         <span class="accent">Schritt</span> für Schritt.</h1>
-        <p class="hero-desc">Vokabeln, Grammatik, Verbkonjugation und ein kleines Quiz für die Niveaus
-        A1 und A2. Kein Auswendiglernen ohne Sinn – nur klare Häppchen, die wirklich hängen bleiben.</p>
+        <p class="hero-desc">Halo, {st.session_state.username or 'Freund'}! Vokabeln, Grammatik,
+        Verbkonjugation, dan quiz seru untuk level A1 & A2. Kein Auswendiglernen ohne Sinn –
+        nur klare Häppchen, die wirklich hängen bleiben.</p>
         """,
         unsafe_allow_html=True,
     )
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        if st.button("🗂️ Vokabeln entdecken", key="cta_vocab", type="primary", use_container_width=True):
-            go_to("vokabeln")
-            st.rerun()
-    with c2:
-        if st.button("🔤 Verben üben", key="cta_verben", use_container_width=True):
-            go_to("verben")
-            st.rerun()
-    with c3:
-        if st.button("📝 Quiz starten", key="cta_quiz", use_container_width=True):
-            go_to("quiz")
-            st.rerun()
+
+    # --- Kenapa belajar di sini (3 highlight) ---
+    why_cols = st.columns(3)
+    highlights = [
+        ("🎯", "Interaktif", "Kartu, latihan verba, dan quiz — bukan sekadar teks untuk dihafal."),
+        ("🧠", "Mudah Diingat", "Setiap kata punya contoh kalimat dan tips mnemonic sendiri."),
+        ("🏆", "Progres Terukur", "Lacak kosakata yang sudah kamu kuasai dan skor terbaikmu."),
+    ]
+    for col, (icon, title, desc) in zip(why_cols, highlights):
+        with col:
+            with st.container(border=True):
+                st.markdown(
+                    f"""
+                    <div class="why-card">
+                      <div class="why-icon">{icon}</div>
+                      <div class="why-title">{title}</div>
+                      <div class="why-desc">{desc}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+    # --- Tip harian (diacak sekali per sesi) ---
+    if st.session_state.daily_tip_idx is None:
+        st.session_state.daily_tip_idx = random.randrange(len(DAILY_TIPS))
+    st.markdown(
+        f"""
+        <div class="tip-of-day">
+          <div class="tip-label">💡 TIPP DES TAGES</div>
+          <div>{DAILY_TIPS[st.session_state.daily_tip_idx]}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # --- Ringkasan progres (hanya jika sudah ada aktivitas) ---
+    has_progress = (
+        st.session_state.viewed_vocab
+        or st.session_state.mastered_vocab
+        or st.session_state.q_high_score > 0
+    )
+    if has_progress:
+        st.markdown(
+            f"""
+            <div class="progress-snapshot">
+              📊 Progres kamu: <b>{len(st.session_state.mastered_vocab)}/{TOTAL_VOCAB}</b> kosakata dikuasai ·
+              <b>{len(st.session_state.viewed_vocab)}/{TOTAL_VOCAB}</b> sudah dilihat ·
+              skor quiz tertinggi <b>{st.session_state.q_high_score}/{len(QUESTIONS)}</b>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    # --- Kartu navigasi ke tiap mode belajar ---
+    st.markdown('<div class="section-head" style="margin-top:6px;"><h2>Pilih mode belajar</h2></div>',
+                 unsafe_allow_html=True)
+
+    feature_cards = [
+        ("vokabeln", "🗂️", "Vokabeln", "Kartu kosakata bertema, lengkap dengan contoh kalimat & tips mengingat."),
+        ("grammatik", "📘", "Grammatik", "Ringkasan grammar A1-A2 yang paling sering dipakai sehari-hari."),
+        ("verben", "🔤", "Verben", "Latihan konjugasi verba dasar seperti sein, haben, lernen, fahren."),
+        ("quiz", "📝", "Quiz", "Uji pemahamanmu lewat 8 soal campuran A1 & A2."),
+    ]
+    fcols = st.columns(2)
+    for i, (page_key, icon, title, desc) in enumerate(feature_cards):
+        with fcols[i % 2]:
+            with st.container(border=True):
+                st.markdown(
+                    f"""
+                    <div class="feature-icon">{icon}</div>
+                    <div class="feature-title">{title}</div>
+                    <div class="feature-desc">{desc}</div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                if st.button(f"Buka {title} →", key=f"cta_{page_key}", type="primary", use_container_width=True):
+                    go_to(page_key)
+                    st.rerun()
     st.write("")
 
 
@@ -535,7 +619,8 @@ def vocab_section():
             """
             <div class="section-head">
               <h2>Vokabelkarten</h2>
-              <p>Klick auf eine Karte, um die Übersetzung zu sehen, und höre dir die Aussprache an.</p>
+              <p>Klick auf eine Karte, um die Übersetzung samt Beispielsatz zu sehen, und markiere
+              Wörter, die du schon auswendig kannst.</p>
             </div>
             """,
             unsafe_allow_html=True,
@@ -581,18 +666,26 @@ def vocab_section():
             safe_cat = st.session_state.current_cat.replace(" ", "_").replace("&", "und")
             card_key = f"{safe_cat}_{item['de']}".replace(" ", "_").replace(",", "").replace("'", "")
             flipped = st.session_state.flipped.get(card_key, False)
+            mastered = item["de"] in st.session_state.mastered_vocab
             side = "b" if flipped else "f"
+            mstate = "m1" if mastered else "m0"
             with card_cols[idx % 3]:
-                with st.container(border=True, key=f"vcard_{side}_{card_key}"):
+                with st.container(border=True, key=f"vcard_{side}_{mstate}_{card_key}"):
+                    badge = '<span class="mastered-badge">✓ Hafal</span>' if mastered else ""
                     if flipped:
-                        st.markdown(f'<div class="card-back">{item["id"]}</div>', unsafe_allow_html=True)
+                        st.markdown(
+                            f'<div class="card-back">{item["id"]}{badge}'
+                            f'<div class="card-example">„{item["ex"]}"</div></div>',
+                            unsafe_allow_html=True,
+                        )
                     else:
                         st.markdown(
-                            f'<div class="card-front">{item["de"]}<span class="card-tag">{item["lvl"]}</span></div>',
+                            f'<div class="card-front">{item["de"]}{badge}'
+                            f'<span class="card-tag">{item["lvl"]}</span></div>',
                             unsafe_allow_html=True,
                         )
 
-                    fc1, fc2 = st.columns([2, 1])
+                    fc1, fc2 = st.columns([3, 2])
                     with fc1:
                         label = "↺ Kembali" if flipped else "↺ Terjemahan"
                         if st.button(label, key=f"flip_{card_key}", use_container_width=True):
@@ -603,28 +696,18 @@ def vocab_section():
                                 st.session_state.viewed_vocab.add(item["de"])
                             st.rerun()
                     with fc2:
-                        audio_label = "🔊" if card_key not in st.session_state.audio_cache else "🔁"
-                        if st.button(audio_label, key=f"audio_{card_key}", use_container_width=True,
-                                      help="Dengarkan pengucapan"):
-                            with st.spinner("Membuat audio..."):
-                                st.session_state.audio_cache[card_key] = generate_tts_audio(item["de"])
+                        star_label = "★ Hafal" if mastered else "☆ Hafal"
+                        if st.button(star_label, key=f"master_{card_key}", use_container_width=True,
+                                      type="primary" if mastered else "secondary",
+                                      help="Tandai kosakata ini sudah kamu kuasai"):
+                            if mastered:
+                                st.session_state.mastered_vocab.discard(item["de"])
+                            else:
+                                st.session_state.mastered_vocab.add(item["de"])
                             st.rerun()
 
-                    cached = st.session_state.audio_cache.get(card_key)
-                    if cached:
-                        audio_bytes, tts_error = cached
-                        if audio_bytes:
-                            st.audio(audio_bytes, format="audio/mp3")
-                        else:
-                            st.caption("🔇 Audio gagal dibuat. Tekan 🔁 untuk coba lagi.")
-                            with st.expander("Lihat detail error"):
-                                st.code(tts_error or "Tidak diketahui")
-                                st.caption(
-                                    "gTTS butuh koneksi internet ke translate.google.com. "
-                                    "Jika kamu berada di jaringan dengan firewall/proxy (kantor, kampus, "
-                                    "server tanpa akses keluar), permintaan ini akan selalu gagal. "
-                                    "Coba jaringan lain, atau nonaktifkan proxy/VPN yang memblokir Google."
-                                )
+                    with st.expander("💡 Tips mengingat"):
+                        st.caption(item["tip"])
 
 
 def grammar_section():
