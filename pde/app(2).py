@@ -195,22 +195,47 @@ def go_to(page: str):
 # ---------------------------------------------------------------------------
 # 3. UTIL — Text-to-Speech (gTTS)
 # ---------------------------------------------------------------------------
-@st.cache_data(show_spinner=False, ttl=3600)
-def generate_tts_audio(text: str):
-    """Menghasilkan audio MP3 (bytes) untuk teks bahasa Jerman.
+def _fetch_tts_audio(text: str):
+    """Helper murni (tanpa cache) — melakukan panggilan gTTS sesungguhnya.
 
-    Mengembalikan None jika gTTS tidak tersedia / gagal (mis. tidak ada
-    koneksi internet), agar UI tetap berjalan tanpa error.
+    gTTS BUTUH KONEKSI INTERNET karena ia memanggil endpoint
+    translate.google.com untuk menghasilkan audio. Jika jaringan tempat
+    aplikasi berjalan tidak bisa mengakses domain tersebut (firewall
+    kantor/kampus, proxy, atau sandbox tanpa akses keluar), permintaan ini
+    akan selalu gagal — ini bukan bug di kode, melainkan keterbatasan
+    jaringan. Mengembalikan (bytes_audio_atau_None, pesan_error_atau_None).
     """
     try:
-        from gtts import gTTS  # import lokal agar app tetap jalan tanpa gTTS
+        from gtts import gTTS
+    except ImportError:
+        return None, "Library gTTS belum terpasang. Jalankan: pip install gTTS"
 
+    try:
         buf = io.BytesIO()
         gTTS(text=text, lang="de").write_to_fp(buf)
         buf.seek(0)
-        return buf.read()
-    except Exception:
-        return None
+        return buf.read(), None
+    except Exception as e:  # noqa: BLE001 — kita ingin menampilkan pesan asli ke user
+        return None, f"{type(e).__name__}: {e}"
+
+
+@st.cache_data(show_spinner=False, ttl=3600)
+def _fetch_tts_audio_cached(text: str):
+    """Versi cache — HANYA dipanggil saat percobaan berhasil (lihat generate_tts_audio)."""
+    return _fetch_tts_audio(text)
+
+
+def generate_tts_audio(text: str):
+    """Menghasilkan audio MP3 (bytes) untuk teks bahasa Jerman.
+
+    Mengembalikan (bytes_audio_atau_None, pesan_error_atau_None).
+    Hasil GAGAL sengaja tidak dicache, supaya tombol "🔁 Coba lagi" bisa
+    langsung mencoba ulang tanpa perlu menunggu TTL cache habis.
+    """
+    audio_bytes, error = _fetch_tts_audio(text)
+    if audio_bytes is not None:
+        return _fetch_tts_audio_cached(text)  # simpan ke cache jalur sukses
+    return audio_bytes, error
 
 
 # ---------------------------------------------------------------------------
@@ -578,15 +603,28 @@ def vocab_section():
                                 st.session_state.viewed_vocab.add(item["de"])
                             st.rerun()
                     with fc2:
-                        if st.button("🔊", key=f"audio_{card_key}", use_container_width=True,
+                        audio_label = "🔊" if card_key not in st.session_state.audio_cache else "🔁"
+                        if st.button(audio_label, key=f"audio_{card_key}", use_container_width=True,
                                       help="Dengarkan pengucapan"):
-                            st.session_state.audio_cache[card_key] = generate_tts_audio(item["de"])
+                            with st.spinner("Membuat audio..."):
+                                st.session_state.audio_cache[card_key] = generate_tts_audio(item["de"])
+                            st.rerun()
 
-                    audio_bytes = st.session_state.audio_cache.get(card_key)
-                    if audio_bytes:
-                        st.audio(audio_bytes, format="audio/mp3")
-                    elif card_key in st.session_state.audio_cache:
-                        st.caption("🔇 Audio tidak tersedia (periksa koneksi internet)")
+                    cached = st.session_state.audio_cache.get(card_key)
+                    if cached:
+                        audio_bytes, tts_error = cached
+                        if audio_bytes:
+                            st.audio(audio_bytes, format="audio/mp3")
+                        else:
+                            st.caption("🔇 Audio gagal dibuat. Tekan 🔁 untuk coba lagi.")
+                            with st.expander("Lihat detail error"):
+                                st.code(tts_error or "Tidak diketahui")
+                                st.caption(
+                                    "gTTS butuh koneksi internet ke translate.google.com. "
+                                    "Jika kamu berada di jaringan dengan firewall/proxy (kantor, kampus, "
+                                    "server tanpa akses keluar), permintaan ini akan selalu gagal. "
+                                    "Coba jaringan lain, atau nonaktifkan proxy/VPN yang memblokir Google."
+                                )
 
 
 def grammar_section():
