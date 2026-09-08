@@ -1,34 +1,47 @@
 """
 Deutschsprung – Dein spielerischer Weg von A1 zu A2
-Streamlit app (revisi v2)
+Streamlit app (revisi v3 — gabungan v2 + fitur pilihan dari draft "Gemini")
 
-Perubahan besar pada revisi ini:
+Perubahan besar pada revisi v2:
   - Fix bug: reset kartu vocab (flipped) tiap ganti kategori
   - Fix bug: filter level A1/A2 tidak lagi "bocor" menampilkan level lain
   - Fix bug: logout memakai st.session_state.clear() (reset total)
-  - Fitur baru: Kartu kosakata dilengkapi contoh kalimat + tips mnemonic,
-        dan tombol "Tandai Hafal" (mastery tracker) — menggantikan audio TTS
-        yang sebelumnya bergantung pada koneksi internet ke Google.
-  - Fitur baru: Modul latihan konjugasi verba (sein, haben, lernen, fahren)
-  - Fitur baru: Dashboard progres (kosakata dikuasai/dilihat & skor quiz)
-  - UX: landing page baru (highlight fitur, tip harian, kartu navigasi,
+  - Fitur: Kartu kosakata dilengkapi contoh kalimat + tips mnemonic,
+        dan tombol "Tandai Hafal" (mastery tracker)
+  - Fitur: Modul latihan konjugasi verba (sein, haben, lernen, fahren)
+  - Fitur: Dashboard progres (kosakata dikuasai/dilihat & skor quiz)
+  - UX: landing page (highlight fitur, tip harian, kartu navigasi,
         ringkasan progres), navigasi berbasis tombol (pill nav), grid kartu
-        lebih rapi, badge/alert umpan balik saat quiz & latihan verba dijawab
+        rapi, badge/alert umpan balik saat quiz & latihan verba dijawab
+  - Fix bug tampilan mobile: header topnav tidak lagi terpotong, dan ikon
+        expander tidak lagi menimpa teks ("arrow_right" overlap)
+
+Tambahan revisi v3 (diadaptasi dari draft "Gemini", tanpa mengubah
+struktur/estetika yang sudah stabil di atas):
+  - Audio pengucapan native (Web Speech API browser, tanpa API key eksternal)
+    pada setiap kartu kosakata
+  - Badge warna gender pedagogis: der = biru, die = merah muda, das = hijau,
+    otomatis dideteksi dari kata (mis. "der Vater")
+  - Filter tambahan "Semua / Belum Hafal / Sudah Hafal" pada halaman Vokabeln
+  - Pembahasan (penjelasan tata bahasa singkat) pada setiap soal quiz setelah
+    dijawab, bukan cuma benar/salah
 
 Struktur file:
   1. Konfigurasi halaman & data (vocab, grammar, verbs, questions, tips)
   2. Session state
   3. Data tambahan (tip harian)
-  4. CSS kustom
-  5. Layar login (simulasi)
-  6. Nav atas + dashboard progres
-  7. Bagian: hero (landing), vocab, grammar, verben, quiz, footer
-  8. Router berbasis st.session_state.page
+  4. Audio engine (TTS native browser)
+  5. CSS kustom
+  6. Layar login (simulasi)
+  7. Nav atas + dashboard progres
+  8. Bagian: hero (landing), vocab, grammar, verben, quiz, footer
+  9. Router berbasis st.session_state.page
 """
 
 import random
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 # ---------------------------------------------------------------------------
 # 1. KONFIGURASI HALAMAN
@@ -189,33 +202,47 @@ VERBS = {
 
 QUESTIONS = [
     {"q": "Wie sagt man 'terima kasih' auf Deutsch?",
-     "opts": ["Bitte", "Danke", "Tschüss", "Hallo"], "a": 1},
+     "opts": ["Bitte", "Danke", "Tschüss", "Hallo"], "a": 1,
+     "exp": "'Danke' = terima kasih. 'Bitte' dipakai untuk membalas ucapan terima kasih ('sama-sama')."},
     {"q": "'Die Mutter' bedeutet auf Indonesisch...",
-     "opts": ["ayah", "ibu", "anak", "kakak"], "a": 1},
+     "opts": ["ayah", "ibu", "anak", "kakak"], "a": 1,
+     "exp": "'Die Mutter' = ibu. Anggota keluarga perempuan hampir selalu berartikel 'die'."},
     {"q": "Welcher Artikel passt zu 'Buch'?",
-     "opts": ["der", "die", "das", "den"], "a": 2},
+     "opts": ["der", "die", "das", "den"], "a": 2,
+     "exp": "'Buch' bergender netral, jadi artikelnya 'das Buch'."},
     {"q": "Ich ___ Student. (sein)",
-     "opts": ["bin", "bist", "ist", "sind"], "a": 0},
+     "opts": ["bin", "bist", "ist", "sind"], "a": 0,
+     "exp": "Konjugasi 'sein' untuk subjek 'ich' adalah 'bin' → Ich bin Student."},
     {"q": "Wähle die richtige Präsensform: du ___ (lernen)",
-     "opts": ["lerne", "lernst", "lernt", "lernen"], "a": 1},
+     "opts": ["lerne", "lernst", "lernt", "lernen"], "a": 1,
+     "exp": "Verba beraturan untuk subjek 'du' mendapat akhiran '-st' → du lernst."},
     {"q": "Perfekt von 'lernen' mit haben:",
-     "opts": ["Ich habe gelernt.", "Ich bin gelernt.", "Ich lernte habe.", "Ich hatte lernen."], "a": 0},
+     "opts": ["Ich habe gelernt.", "Ich bin gelernt.", "Ich lernte habe.", "Ich hatte lernen."], "a": 0,
+     "exp": "'Lernen' adalah verba transitif biasa, jadi Perfekt-nya pakai 'haben' + Partizip II (gelernt)."},
     {"q": "Modalverb für 'harus' (müssen):",
-     "opts": ["kann", "will", "muss", "mag"], "a": 2},
+     "opts": ["kann", "will", "muss", "mag"], "a": 2,
+     "exp": "'Müssen' (harus) → konjugasi 'ich muss'. 'Kann' = bisa, 'will' = mau, 'mag' = suka."},
     {"q": "'Der Gast' im Hotelkontext bedeutet:",
-     "opts": ["kunci", "kamar", "tamu", "resepsionis"], "a": 2},
+     "opts": ["kunci", "kamar", "tamu", "resepsionis"], "a": 2,
+     "exp": "'Der Gast' = tamu, mirip kata 'guest' dalam bahasa Inggris."},
     {"q": "Wie sagt man 'roti' auf Deutsch?",
-     "opts": ["das Wasser", "das Brot", "der Apfel", "die Rechnung"], "a": 1},
+     "opts": ["das Wasser", "das Brot", "der Apfel", "die Rechnung"], "a": 1,
+     "exp": "'Das Brot' = roti, makanan pokok sehari-hari di Jerman."},
     {"q": "'Der Bahnhof' bedeutet auf Indonesisch...",
-     "opts": ["bandara", "stasiun kereta", "tiket", "pesawat"], "a": 1},
+     "opts": ["bandara", "stasiun kereta", "tiket", "pesawat"], "a": 1,
+     "exp": "'Der Bahnhof' = gabungan 'Bahn' (rel) + 'Hof' (tempat) → stasiun kereta."},
     {"q": "Welches Wort passt: 'Ich brauche eine ___ nach München.'",
-     "opts": ["Fahrkarte", "Rechnung", "Schule", "Büro"], "a": 0},
+     "opts": ["Fahrkarte", "Rechnung", "Schule", "Büro"], "a": 0,
+     "exp": "'Die Fahrkarte' = tiket perjalanan, dibutuhkan sebelum naik kereta/bus."},
     {"q": "'Die Schule' bedeutet:",
-     "opts": ["kantor", "sekolah", "pekerjaan", "restoran"], "a": 1},
+     "opts": ["kantor", "sekolah", "pekerjaan", "restoran"], "a": 1,
+     "exp": "'Die Schule' = sekolah, mirip kata 'school' dalam bahasa Inggris."},
     {"q": "Perfekt yang benar untuk 'fahren' (dengan sein):",
-     "opts": ["Ich habe gefahren.", "Ich bin gefahren.", "Ich fahre gewesen.", "Ich war fahren."], "a": 1},
+     "opts": ["Ich habe gefahren.", "Ich bin gefahren.", "Ich fahre gewesen.", "Ich war fahren."], "a": 1,
+     "exp": "'Fahren' menyatakan perpindahan tempat, sehingga Perfekt-nya wajib pakai 'sein', bukan 'haben'."},
     {"q": "Wähle die richtige Präsensform: er ___ (fahren)",
-     "opts": ["fahre", "fährst", "fährt", "fahren"], "a": 2},
+     "opts": ["fahre", "fährst", "fährt", "fahren"], "a": 2,
+     "exp": "'Fahren' mengalami Umlautwechsel (a→ä) untuk 'du' dan 'er/sie/es' → er fährt."},
 ]
 
 PAGES = ["beranda", "vokabeln", "grammatik", "verben", "quiz"]
@@ -241,6 +268,7 @@ _DEFAULTS = {
     "flipped": {},                       # {card_key: bool} — direset tiap ganti kategori
     "viewed_vocab": set(),               # kata (de) yang pernah dibuka terjemahannya
     "mastered_vocab": set(),             # kata (de) yang ditandai "sudah hafal"
+    "filter_mastery": "Semua",           # "Semua" | "Belum Hafal" | "Sudah Hafal"
     "daily_tip_idx": None,               # index tip harian (diacak sekali per sesi)
     "q_index": 0,
     "q_score": 0,
@@ -284,7 +312,47 @@ DAILY_TIPS = [
 
 
 # ---------------------------------------------------------------------------
-# 4. CSS KUSTOM
+# 4. AUDIO ENGINE — TTS native browser (Web Speech API, tanpa API key)
+# ---------------------------------------------------------------------------
+def play_pronunciation(text: str):
+    """Memutar pengucapan Jerman lewat speechSynthesis bawaan browser.
+
+    Tidak butuh koneksi ke layanan pihak ketiga (mis. Google Translate TTS),
+    jadi tetap berfungsi offline selama browser mendukung Web Speech API.
+    """
+    safe_text = text.replace("\\", "").replace("'", "\\'").replace('"', '\\"')
+    components.html(
+        f"""
+        <script>
+        (function() {{
+            if (!('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance('{safe_text}');
+            msg.lang = 'de-DE';
+            msg.rate = 0.92;
+            window.speechSynthesis.speak(msg);
+        }})();
+        </script>
+        """,
+        height=0,
+        width=0,
+    )
+
+
+def gendered_word_html(de_text: str) -> str:
+    """Mewarnai artikel der/die/das sesuai konvensi pedagogis DaF
+    (der = biru, die = merah muda, das = hijau), tanpa mengubah struktur
+    data VOCAB (artikel tetap menyatu dalam field 'de', mis. 'der Vater')."""
+    parts = de_text.split(" ", 1)
+    if len(parts) == 2 and parts[0] in ("der", "die", "das"):
+        article, rest = parts
+        cls = {"der": "gender-der", "die": "gender-die", "das": "gender-das"}[article]
+        return f'<span class="{cls}">{article}</span> {rest}'
+    return de_text
+
+
+# ---------------------------------------------------------------------------
+# 5. CSS KUSTOM
 # ---------------------------------------------------------------------------
 def inject_css():
     st.markdown(
@@ -299,6 +367,11 @@ def inject_css():
             --brick:#C1440E;
             --teal:#3A7D7B;
             --line:rgba(242,236,221,0.18);
+
+            /* Warna gender pedagogis DaF: der/die/das */
+            --gender-der:#4E8FDE;
+            --gender-die:#E1548C;
+            --gender-das:#5FBF8E;
         }
 
         html, body, [class^="st-"], [class*=" st-"] { font-family:'Inter', sans-serif; }
@@ -498,6 +571,19 @@ def inject_css():
         }
         .mastered-badge { display:inline-block; background:var(--mustard); color:var(--ink); font-size:0.68rem; font-weight:700; padding:2px 9px; border-radius:999px; margin-left:6px; vertical-align:middle; }
         .card-example { font-size:0.82rem; opacity:0.85; margin-top:8px; line-height:1.45; font-style:italic; }
+
+        /* ---------- Badge warna gender (der/die/das) ---------- */
+        .gender-der { color:var(--gender-der); font-weight:800; }
+        .gender-die { color:var(--gender-die); font-weight:800; }
+        .gender-das { color:var(--gender-das); font-weight:800; }
+
+        /* ---------- Pembahasan soal quiz ---------- */
+        .quiz-exp-box {
+            background:rgba(232,169,59,0.12); border:1.5px solid var(--mustard);
+            border-radius:10px; padding:12px 14px; margin:10px 0 14px;
+            font-size:0.88rem; line-height:1.5; color:var(--paper);
+        }
+        .quiz-exp-box b { color:var(--mustard); }
 
         /* ---------- Badge umpan balik (feedback) ---------- */
         .badge-success, .badge-error {
@@ -758,6 +844,15 @@ def vocab_section():
 
         st.write("")
 
+        # --- Filter tambahan: status hafalan (Semua / Belum / Sudah Hafal) ---
+        st.session_state.filter_mastery = st.radio(
+            "Filter status",
+            ["Semua", "Belum Hafal", "Sudah Hafal"],
+            horizontal=True,
+            key="filter_mastery_radio",
+            index=["Semua", "Belum Hafal", "Sudah Hafal"].index(st.session_state.filter_mastery),
+        )
+
         # --- Grid kartu, difilter murni berdasarkan level aktif ---
         # FIX BUG: A1 hanya menampilkan A1; A2 menampilkan A1+A2 (tanpa fallback
         # yang membocorkan level lain saat suatu kategori kosong di A1).
@@ -767,10 +862,16 @@ def vocab_section():
         else:
             items = list(all_items)  # A2 = gabungan A1 + A2
 
+        # Terapkan filter status hafalan di atas hasil filter level
+        if st.session_state.filter_mastery == "Belum Hafal":
+            items = [v for v in items if v["de"] not in st.session_state.mastered_vocab]
+        elif st.session_state.filter_mastery == "Sudah Hafal":
+            items = [v for v in items if v["de"] in st.session_state.mastered_vocab]
+
         if not items:
             st.info(
-                f"Belum ada kosakata level A1 di kategori **{st.session_state.current_cat}**. "
-                "Coba beralih ke level A2 di atas. 👆"
+                f"Tidak ada kosakata yang cocok di kategori **{st.session_state.current_cat}** "
+                "dengan filter saat ini. Coba ganti level atau filter status di atas. 👆"
             )
             return
 
@@ -785,6 +886,7 @@ def vocab_section():
             with card_cols[idx % 3]:
                 with st.container(border=True, key=f"vcard_{side}_{mstate}_{card_key}"):
                     badge = '<span class="mastered-badge">✓ Hafal</span>' if mastered else ""
+                    de_html = gendered_word_html(item["de"])  # pewarnaan der/die/das
                     if flipped:
                         st.markdown(
                             f'<div class="card-back">{item["id"]}{badge}'
@@ -793,12 +895,17 @@ def vocab_section():
                         )
                     else:
                         st.markdown(
-                            f'<div class="card-front">{item["de"]}{badge}'
+                            f'<div class="card-front">{de_html}{badge}'
                             f'<span class="card-tag">{item["lvl"]}</span></div>',
                             unsafe_allow_html=True,
                         )
 
-                    fc1, fc2 = st.columns([3, 2])
+                    fc0, fc1, fc2 = st.columns([1, 2.4, 2.4])
+                    with fc0:
+                        if st.button("🔊", key=f"tts_{card_key}", use_container_width=True,
+                                      help="Dengarkan pengucapan (butuh browser yang mendukung Web Speech API)"):
+                            play_pronunciation(item["de"])
+                            st.session_state.viewed_vocab.add(item["de"])
                     with fc1:
                         label = "↺ Kembali" if flipped else "↺ Terjemahan"
                         if st.button(label, key=f"flip_{card_key}", use_container_width=True):
@@ -987,6 +1094,12 @@ def quiz_section():
                         else:
                             cls = "neutral"
                         st.markdown(f'<div class="q-opt-static {cls}">{opt}</div>', unsafe_allow_html=True)
+
+                    if item.get("exp"):
+                        st.markdown(
+                            f'<div class="quiz-exp-box">💡 <b>Pembahasan:</b> {item["exp"]}</div>',
+                            unsafe_allow_html=True,
+                        )
 
                     is_last = st.session_state.q_index == len(QUESTIONS) - 1
                     next_label = "Ergebnis anzeigen →" if is_last else "Nächste Frage →"
