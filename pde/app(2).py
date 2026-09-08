@@ -104,6 +104,42 @@ VOCAB = {
         {"de": "die Verabredung", "id": "janji temu", "lvl": "A2",
          "ex": "Ich habe eine Verabredung um 15 Uhr.", "tip": "Berasal dari kata 'sich verabreden' (membuat janji)."},
     ],
+    "Essen & Trinken": [
+        {"de": "das Brot", "id": "roti", "lvl": "A1",
+         "ex": "Ich esse jeden Morgen Brot.", "tip": "Makanan pokok orang Jerman sehari-hari."},
+        {"de": "das Wasser", "id": "air", "lvl": "A1",
+         "ex": "Ein Glas Wasser, bitte.", "tip": "Kata paling penting saat memesan minuman."},
+        {"de": "der Apfel", "id": "apel", "lvl": "A1",
+         "ex": "Der Apfel ist süß.", "tip": "Mirip kata Inggris 'apple', mudah dihafal."},
+        {"de": "das Restaurant", "id": "restoran", "lvl": "A2",
+         "ex": "Wir gehen heute ins Restaurant.", "tip": "Kata serapan internasional, pengucapan mirip bahasa Prancis."},
+        {"de": "die Rechnung", "id": "tagihan / bon", "lvl": "A2",
+         "ex": "Können wir bitte die Rechnung haben?", "tip": "Kalimat wajib sebelum meninggalkan restoran."},
+    ],
+    "Reisen & Verkehr": [
+        {"de": "der Zug", "id": "kereta", "lvl": "A1",
+         "ex": "Der Zug fährt um acht Uhr.", "tip": "Transportasi favorit di Jerman, selalu diusahakan pünktlich."},
+        {"de": "das Flugzeug", "id": "pesawat terbang", "lvl": "A1",
+         "ex": "Das Flugzeug landet in Berlin.", "tip": "Gabungan 'fliegen' (terbang) + 'Zeug' (alat)."},
+        {"de": "der Bahnhof", "id": "stasiun kereta", "lvl": "A2",
+         "ex": "Der Bahnhof ist gleich um die Ecke.", "tip": "Gabungan 'Bahn' (rel) + 'Hof' (halaman/tempat)."},
+        {"de": "die Fahrkarte", "id": "tiket perjalanan", "lvl": "A2",
+         "ex": "Ich brauche eine Fahrkarte nach München.", "tip": "Berasal dari 'fahren' (berkendara) + 'Karte' (kartu)."},
+        {"de": "der Flughafen", "id": "bandara", "lvl": "A2",
+         "ex": "Wir treffen uns am Flughafen.", "tip": "Gabungan 'Flug' (penerbangan) + 'Hafen' (pelabuhan)."},
+    ],
+    "Beruf & Schule": [
+        {"de": "die Arbeit", "id": "pekerjaan", "lvl": "A1",
+         "ex": "Meine Arbeit macht mir Spaß.", "tip": "Kata dasar untuk semua topik seputar pekerjaan."},
+        {"de": "die Schule", "id": "sekolah", "lvl": "A1",
+         "ex": "Die Kinder gehen zur Schule.", "tip": "Mirip 'school' dalam bahasa Inggris."},
+        {"de": "der Lehrer", "id": "guru (laki-laki)", "lvl": "A2",
+         "ex": "Der Lehrer erklärt die Grammatik.", "tip": "Versi perempuan: 'die Lehrerin'."},
+        {"de": "der Kollege", "id": "rekan kerja (laki-laki)", "lvl": "A2",
+         "ex": "Mein Kollege hilft mir gern.", "tip": "Versi perempuan: 'die Kollegin'."},
+        {"de": "das Büro", "id": "kantor", "lvl": "A2",
+         "ex": "Ich arbeite im Büro bis 17 Uhr.", "tip": "Kata serapan dari bahasa Prancis 'bureau'."},
+    ],
 }
 
 GRAMMAR = [
@@ -168,6 +204,18 @@ QUESTIONS = [
      "opts": ["kann", "will", "muss", "mag"], "a": 2},
     {"q": "'Der Gast' im Hotelkontext bedeutet:",
      "opts": ["kunci", "kamar", "tamu", "resepsionis"], "a": 2},
+    {"q": "Wie sagt man 'roti' auf Deutsch?",
+     "opts": ["das Wasser", "das Brot", "der Apfel", "die Rechnung"], "a": 1},
+    {"q": "'Der Bahnhof' bedeutet auf Indonesisch...",
+     "opts": ["bandara", "stasiun kereta", "tiket", "pesawat"], "a": 1},
+    {"q": "Welches Wort passt: 'Ich brauche eine ___ nach München.'",
+     "opts": ["Fahrkarte", "Rechnung", "Schule", "Büro"], "a": 0},
+    {"q": "'Die Schule' bedeutet:",
+     "opts": ["kantor", "sekolah", "pekerjaan", "restoran"], "a": 1},
+    {"q": "Perfekt yang benar untuk 'fahren' (dengan sein):",
+     "opts": ["Ich habe gefahren.", "Ich bin gefahren.", "Ich fahre gewesen.", "Ich war fahren."], "a": 1},
+    {"q": "Wähle die richtige Präsensform: er ___ (fahren)",
+     "opts": ["fahre", "fährst", "fährt", "fahren"], "a": 2},
 ]
 
 PAGES = ["beranda", "vokabeln", "grammatik", "verben", "quiz"]
@@ -256,11 +304,58 @@ def inject_css():
         html, body, [class^="st-"], [class*=" st-"] { font-family:'Inter', sans-serif; }
         h1, h2, h3 { font-family:'Space Grotesk', sans-serif !important; }
 
+        /* FIX BUG #2 — "arrow_right menimpa teks Mengingat":
+           Aturan font-family umum di atas ikut menimpa font ikon Streamlit
+           (Material Symbols), yang dipakai a.l. oleh panah expander.
+           Font ikon itu pakai teknik ligature: kalau font-nya diganti ke
+           'Inter', ligature gagal dan yang tampil malah TEKS MENTAH
+           "arrow_right" bertumpuk di atas label "Tips mengingat".
+           Kembalikan font asli khusus untuk elemen ikon. */
+        [data-testid="stIconMaterial"],
+        span[data-testid="stExpanderToggleIcon"],
+        .material-symbols-rounded,
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Rounded', 'Material Symbols Outlined', sans-serif !important;
+            font-size: 1.15rem !important;
+            line-height: 1 !important;
+        }
+
+        /* Rapikan header expander agar ikon & teks tidak bertumpuk lagi */
+        div[data-testid="stExpander"] summary {
+            display:flex !important;
+            align-items:center !important;
+            gap:8px;
+            line-height:1.5 !important;
+            padding:10px 14px !important;
+            min-height:2.4em;
+        }
+        div[data-testid="stExpander"] summary p {
+            margin:0 !important;
+            font-size:0.92rem;
+        }
+
         #MainMenu {visibility:hidden;}
         footer {visibility:hidden;}
 
+        /* Header bawaan Streamlit (tombol Fork/GitHub) dibuat transparan tapi
+           tetap memakan ruang, supaya topnav kustom tidak ketiban / terpotong. */
+        header[data-testid="stHeader"] {
+            background:transparent;
+            height:3rem;
+        }
+
         .stApp { background:var(--ink); color:var(--paper); }
-        .block-container { max-width:900px; padding-top:1.5rem; padding-bottom:3rem; }
+        .block-container {
+            max-width:900px;
+            padding-top:2rem;      /* FIX BUG #1: jarak aman dari header Streamlit */
+            padding-bottom:3rem;
+        }
+
+        /* ---------- Responsif khusus layar HP ---------- */
+        @media (max-width: 640px) {
+            .block-container { padding-top:3.25rem !important; padding-left:1rem; padding-right:1rem; }
+            .topnav { padding-top:0.75rem; }
+        }
 
         /* ---------- Tombol umum ---------- */
         .stButton > button {
@@ -300,9 +395,22 @@ def inject_css():
         .st-key-login_card .stButton > button[kind="primary"] { background:var(--ink) !important; color:var(--paper) !important; border-color:var(--ink) !important; }
 
         /* ---------- Nav / top bar ---------- */
-        .topnav { display:flex; align-items:center; justify-content:space-between; padding:10px 0 16px; border-bottom:1px solid var(--line); margin-bottom:14px; }
-        .brand { display:flex; align-items:center; gap:9px; font-weight:700; font-size:1.1rem; font-family:'Space Grotesk',sans-serif; }
-        .user-chip { display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:600; }
+        /* FIX BUG #1: flex-wrap + align-items memastikan brand & user-chip
+           tetap rapi bila lebar layar sempit (HP), bukan terdorong keluar. */
+        .topnav {
+            display:flex;
+            flex-wrap:wrap;
+            align-items:center;
+            justify-content:space-between;
+            row-gap:10px;
+            column-gap:12px;
+            padding:10px 0 16px;
+            border-bottom:1px solid var(--line);
+            margin-bottom:14px;
+        }
+        .brand { display:flex; align-items:center; gap:9px; font-weight:700; font-size:1.1rem; font-family:'Space Grotesk',sans-serif; flex-shrink:0; }
+        .user-chip { display:flex; align-items:center; gap:8px; font-size:0.88rem; font-weight:600; max-width:100%; overflow:hidden; }
+        .user-chip span:last-child { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:38vw; }
         .avatar { width:28px; height:28px; border-radius:50%; background:var(--mustard); color:var(--ink); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.82rem; flex-shrink:0; }
 
         /* ---------- Dashboard progres ---------- */
@@ -330,12 +438,17 @@ def inject_css():
         .st-key-vocab_wrap .section-head p { color:rgba(27,36,48,0.7); }
         .st-key-vocab_wrap .stButton > button { border:1.5px solid var(--ink); color:var(--ink); }
         .st-key-vocab_wrap .stButton > button[kind="primary"] { background:var(--ink) !important; color:var(--paper) !important; border-color:var(--ink) !important; }
-        div[class*="st-key-vcard_"] { min-height:118px; display:flex; flex-direction:column; justify-content:center; }
+        div[class*="st-key-vcard_"] {
+            min-height:118px; display:flex; flex-direction:column; justify-content:center;
+            transition:transform .18s ease, box-shadow .18s ease;
+        }
+        div[class*="st-key-vcard_"]:hover { transform:translateY(-3px); box-shadow:0 8px 18px rgba(0,0,0,0.18); }
         div[class*="st-key-vcard_f_"] { background:var(--paper) !important; border:1.5px solid var(--ink) !important; }
         div[class*="st-key-vcard_b_"] { background:var(--brick) !important; border:1.5px solid var(--brick) !important; }
-        .card-front { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:1.08rem; text-align:center; color:var(--ink); }
-        .card-front .card-tag { display:block; font-size:0.7rem; color:var(--brick); margin-top:5px; font-weight:600; }
-        .card-back { font-family:'Inter',sans-serif; font-weight:600; font-size:1rem; text-align:center; color:var(--paper); }
+        .card-front { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:1.08rem; text-align:center; color:var(--ink); line-height:1.4; }
+        .card-front .card-tag { display:block; font-size:0.7rem; color:var(--brick); margin-top:6px; font-weight:600; }
+        .card-back { font-family:'Inter',sans-serif; font-weight:600; font-size:1rem; text-align:center; color:var(--paper); line-height:1.4; }
+        .mastered-badge { margin-left:6px; }
 
         /* ---------- Grammatik (section gelap, seperti asli) ---------- */
         .g-lvl { display:inline-block; font-size:0.7rem; font-weight:700; color:var(--ink); background:var(--mustard); padding:3px 10px; border-radius:999px; margin-bottom:8px; }
@@ -384,7 +497,7 @@ def inject_css():
             border-color:var(--mustard) !important; box-shadow:0 0 0 2px rgba(232,169,59,0.35) inset;
         }
         .mastered-badge { display:inline-block; background:var(--mustard); color:var(--ink); font-size:0.68rem; font-weight:700; padding:2px 9px; border-radius:999px; margin-left:6px; vertical-align:middle; }
-        .card-example { font-size:0.82rem; opacity:0.85; margin-top:6px; font-style:italic; }
+        .card-example { font-size:0.82rem; opacity:0.85; margin-top:8px; line-height:1.45; font-style:italic; }
 
         /* ---------- Badge umpan balik (feedback) ---------- */
         .badge-success, .badge-error {
