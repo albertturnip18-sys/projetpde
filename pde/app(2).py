@@ -44,6 +44,16 @@ import datetime
 import streamlit as st
 import streamlit.components.v1 as components
 
+# Animasi Lottie di landing page (fitur tambahan dari draft "Gemini").
+# Opsional: kalau paket 'streamlit-lottie' / 'requests' belum terpasang,
+# app tetap jalan normal, hanya animasinya yang tidak muncul.
+try:
+    import requests
+    from streamlit_lottie import st_lottie
+    _LOTTIE_AVAILABLE = True
+except ImportError:
+    _LOTTIE_AVAILABLE = False
+
 # ---------------------------------------------------------------------------
 # 1. KONFIGURASI HALAMAN
 # ---------------------------------------------------------------------------
@@ -260,7 +270,7 @@ SENTENCE_BUILDER_DATA = [
      "words": ["Mein", "Vater", "arbeitet", "im", "Büro"]},
 ]
 
-PAGES = ["beranda", "vokabeln", "grammatik", "verben", "games", "quiz"]
+PAGES = ["beranda", "vokabeln", "grammatik", "verben", "games", "quiz", "statistik"]
 PAGE_LABELS = {
     "beranda": "🏠 Beranda",
     "vokabeln": "🗂️ Vokabeln",
@@ -268,9 +278,20 @@ PAGE_LABELS = {
     "verben": "🔤 Verben",
     "games": "🎮 Mini-Games",
     "quiz": "📝 Quiz",
+    "statistik": "📊 Statistik",
 }
 
 TOTAL_VOCAB = sum(len(v) for v in VOCAB.values())
+
+# Pool semua kosakata (dipakai bersama beberapa mini-game & halaman statistik)
+ALL_VOCAB = [item for items in VOCAB.values() for item in items]
+
+# Pool nomina (kata yang berartikel der/die/das) — dipakai oleh game
+# "Artikel-Duell" dan "Wort-Puzzle"
+NOUN_POOL = [
+    item for item in ALL_VOCAB
+    if len(item["de"].split(" ", 1)) == 2 and item["de"].split(" ", 1)[0] in ("der", "die", "das")
+]
 
 # ---------------------------------------------------------------------------
 # 2. SESSION STATE
@@ -297,6 +318,7 @@ _DEFAULTS = {
     "verb_result": None,                 # hasil cek terakhir (untuk ditampilkan)
     # --- Gamifikasi & Mini-Games ---
     "xp": 0,
+    "xp_level": 1,                        # Level dari XP (xp//100 + 1) — terpisah dari 'level' (A1/A2 CEFR)
     "streak": 1,
     "last_active_date": None,            # diisi & dicek sekali per sesi login
     "badges": set(),
@@ -306,6 +328,17 @@ _DEFAULTS = {
     "match_solved": set(),
     "sb_index": 0,
     "sb_user_words": [],
+    # --- Game baru: Artikel-Duell (tebak der/die/das) ---
+    "art_current": None,
+    "art_score": 0,
+    "art_total": 0,
+    # --- Game baru: Wort-Puzzle (acak huruf) ---
+    "scramble_current": None,
+    "scramble_raw": "",
+    "scramble_shuffled": "",
+    # --- Game baru: Hör-Quiz (dengar & tebak) ---
+    "listen_current": None,
+    "listen_options": None,
 }
 for _k, _v in _DEFAULTS.items():
     if _k not in st.session_state:
@@ -313,8 +346,15 @@ for _k, _v in _DEFAULTS.items():
 
 
 def add_xp(points: int, reason: str = ""):
-    """Tambah XP dan cek apakah ada lencana baru yang terbuka."""
+    """Tambah XP, cek level-up (fitur dari draft 'Gemini': level = xp//100 + 1),
+    dan cek apakah ada lencana baru yang terbuka."""
     st.session_state.xp += points
+    new_xp_level = (st.session_state.xp // 100) + 1
+    if new_xp_level > st.session_state.xp_level:
+        st.session_state.xp_level = new_xp_level
+        play_sfx("level_up")
+        trigger_confetti()
+        st.toast(f"🚀 Level Up! Kamu sekarang Level {new_xp_level}!", icon="🚀")
     check_badges()
     if reason:
         st.toast(f"⚡ +{points} XP — {reason}")
@@ -323,6 +363,7 @@ def add_xp(points: int, reason: str = ""):
 def check_badges():
     """Buka lencana baru berdasarkan pencapaian saat ini (idempotent, aman dipanggil berkali-kali)."""
     milestones = [
+        (True, "🌱 Anfänger (Level pemula)"),
         (len(st.session_state.mastered_vocab) >= 5, "🎯 Wortschatz-Anfänger (5 kata hafal)"),
         (len(st.session_state.mastered_vocab) >= 15, "🔥 Wortschatz-Meister (15 kata hafal)"),
         (st.session_state.q_high_score >= 10, "🧠 Quiz-Profi (skor quiz ≥ 10)"),
@@ -454,6 +495,58 @@ def render_speech_rec(target_text: str, key: str):
         """,
         height=68,
     )
+
+
+def trigger_confetti():
+    """Efek confetti singkat (canvas-confetti via CDN) untuk momen jawaban
+    benar / pencapaian, diadaptasi dari draft 'Gemini'."""
+    components.html(
+        """
+        <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+        <script>
+        (function() {
+            if (window.confetti) {
+                confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
+            }
+        })();
+        </script>
+        """,
+        height=0, width=0,
+    )
+
+
+def play_sfx(kind: str = "correct"):
+    """Efek suara singkat saat jawaban benar/salah, diadaptasi dari draft
+    'Gemini'. Aman dipanggil berkali-kali; jika audio gagal dimuat (mis.
+    tanpa koneksi internet), bagian lain halaman tidak terganggu."""
+    urls = {
+        "correct": "https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3",
+        "wrong": "https://assets.mixkit.co/active_storage/sfx/2003/2003-preview.mp3",
+        "level_up": "https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3",
+    }
+    url = urls.get(kind, urls["correct"])
+    components.html(
+        f'<audio autoplay style="display:none;"><source src="{url}" type="audio/mp3"></audio>',
+        height=0, width=0,
+    )
+
+
+def load_lottie_animation(url: str):
+    """Ambil animasi Lottie dari URL untuk landing page. Mengembalikan None
+    (tanpa error) jika paket belum terpasang, offline, atau URL gagal
+    diakses — landing page tetap tampil normal tanpa animasi."""
+    if not _LOTTIE_AVAILABLE:
+        return None
+    try:
+        r = requests.get(url, timeout=5)
+        if r.status_code != 200:
+            return None
+        return r.json()
+    except Exception:
+        return None
+
+
+LOTTIE_GERMANY_URL = "https://lottie.host/801a61a0-1282-411a-b6e3-2e06f9d5be38/N2iCAtU48k.json"
 
 
 def gendered_word_html(de_text: str) -> str:
@@ -619,6 +712,24 @@ def inject_css():
             font-size:0.75rem; font-weight:700; margin:2px 4px 2px 0;
         }
 
+        /* ---------- Sidebar profil (fitur dari draft "Gemini", direstyle ke tema app ini) ---------- */
+        section[data-testid="stSidebar"] { background:var(--ink); border-right:1px solid var(--line); }
+        section[data-testid="stSidebar"] * { color:var(--paper); }
+        section[data-testid="stSidebar"] div[data-testid="stMetric"] {
+            background:rgba(242,236,221,0.06); border:1px solid var(--line); border-radius:10px;
+        }
+        .badge-card {
+            background:rgba(242,236,221,0.06); border:1.5px solid var(--mustard); border-radius:12px;
+            padding:10px; text-align:center; margin:4px 0; font-size:0.8rem;
+        }
+        .sidebar-avatar {
+            width:52px; height:52px; border-radius:50%; background:var(--mustard); color:var(--ink);
+            display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.3rem;
+            margin:0 auto 8px;
+        }
+        .sidebar-username { text-align:center; font-weight:700; font-family:'Space Grotesk',sans-serif; margin-bottom:2px; }
+        .sidebar-level { text-align:center; color:var(--mustard); font-weight:600; font-size:0.85rem; margin-bottom:10px; }
+
         /* ---------- Mini-Games ---------- */
         .st-key-games_wrap { background:var(--paper) !important; border:none !important; border-radius:16px; padding:1.6rem 1.4rem; color:var(--ink); }
         .st-key-games_wrap .section-head p { color:rgba(27,36,48,0.7); }
@@ -652,8 +763,16 @@ def inject_css():
         div[class*="st-key-vcard_"] {
             min-height:118px; display:flex; flex-direction:column; justify-content:center;
             transition:transform .18s ease, box-shadow .18s ease;
+            perspective:800px;                 /* fitur dari draft "Gemini": kedalaman 3D */
         }
-        div[class*="st-key-vcard_"]:hover { transform:translateY(-3px); box-shadow:0 8px 18px rgba(0,0,0,0.18); }
+        div[class*="st-key-vcard_"]:hover {
+            transform:translateY(-3px) rotateX(4deg) rotateY(-4deg);
+            box-shadow:0 12px 22px rgba(0,0,0,0.22);
+        }
+        div[class*="st-key-vcard_"] .card-front,
+        div[class*="st-key-vcard_"] .card-back {
+            transform-style:preserve-3d; transition:transform .25s ease;
+        }
         div[class*="st-key-vcard_f_"] { background:var(--paper) !important; border:1.5px solid var(--ink) !important; }
         div[class*="st-key-vcard_b_"] { background:var(--brick) !important; border:1.5px solid var(--brick) !important; }
         .card-front { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:1.08rem; text-align:center; color:var(--ink); line-height:1.4; }
@@ -733,6 +852,13 @@ def inject_css():
         .badge-error { background:rgba(193,68,14,0.24); border:1.5px solid var(--brick); color:var(--paper); }
         @keyframes pop-in { from { transform:scale(0.92); opacity:0; } to { transform:scale(1); opacity:1; } }
 
+        /* ---------- Statistik & Papan Peringkat (halaman baru) ---------- */
+        .st-key-stat_wrap { background:var(--paper) !important; border:none !important; border-radius:16px; padding:1.6rem 1.4rem; color:var(--ink); }
+        .st-key-stat_wrap .section-head p { color:rgba(27,36,48,0.7); }
+        .st-key-stat_wrap div[data-testid="stMetric"] { background:rgba(27,36,48,0.05); border-color:rgba(27,36,48,0.12); }
+        .st-key-stat_wrap div[data-testid="stMetricLabel"] { color:rgba(27,36,48,0.65) !important; }
+        .st-key-stat_wrap div[data-testid="stMetricValue"] { color:var(--brick) !important; }
+
         /* ---------- Footer ---------- */
         .app-footer { text-align:center; color:rgba(242,236,221,0.5); font-size:0.85rem; padding-top:28px; margin-top:20px; border-top:1px solid var(--line); }
         </style>
@@ -799,6 +925,39 @@ def login_screen():
 # ---------------------------------------------------------------------------
 # 6. NAV ATAS + DASHBOARD PROGRES
 # ---------------------------------------------------------------------------
+def render_sidebar_profile():
+    """Panel profil di sidebar (avatar, Level dari XP, progress bar, streak,
+    grid lencana), diadaptasi dari draft 'Gemini' dan direstyle ke tema app
+    ini. Sidebar dibiarkan collapsed secara default (initial_sidebar_state
+    tetap 'collapsed') supaya tampilan utama tidak berubah — pengguna bisa
+    membukanya lewat panah di kiri atas kalau mau."""
+    check_badges()
+    initial = st.session_state.username[:1].upper() if st.session_state.username else "?"
+    with st.sidebar:
+        st.markdown(f'<div class="sidebar-avatar">{initial}</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="sidebar-username">{st.session_state.username or "Freund"}</div>',
+                     unsafe_allow_html=True)
+        st.markdown(f'<div class="sidebar-level">🎚️ Level {st.session_state.xp_level}</div>',
+                     unsafe_allow_html=True)
+
+        xp_in_level = st.session_state.xp % 100
+        st.progress(xp_in_level / 100.0, text=f"{xp_in_level}/100 XP menuju Level {st.session_state.xp_level + 1}")
+
+        sc1, sc2 = st.columns(2)
+        with sc1:
+            st.metric("Total XP", st.session_state.xp)
+        with sc2:
+            st.metric("Streak", f"🔥 {st.session_state.streak}")
+
+        st.divider()
+        st.markdown("**🏆 Pencapaian**")
+        badges_sorted = sorted(st.session_state.badges)
+        badge_cols = st.columns(2)
+        for i, b in enumerate(badges_sorted):
+            with badge_cols[i % 2]:
+                st.markdown(f'<div class="badge-card">🎖️<br>{b}</div>', unsafe_allow_html=True)
+
+
 def top_nav():
     check_badges()  # sinkronkan lencana dengan progres terbaru sebelum ditampilkan
     initial = st.session_state.username[:1].upper() if st.session_state.username else "?"
@@ -809,6 +968,7 @@ def top_nav():
           <div class="user-chip">
             <span class="avatar">{initial}</span>
             <span class="username-text">{st.session_state.username}</span>
+            <span class="badge-pill">🎚️ Lv. {st.session_state.xp_level}</span>
             <span class="badge-pill">⚡ {st.session_state.xp} XP</span>
             <span class="badge-pill">🔥 {st.session_state.streak} hari</span>
           </div>
@@ -876,6 +1036,12 @@ def hero_section():
         """,
         unsafe_allow_html=True,
     )
+
+    # --- Animasi Lottie (opsional, hanya tampil jika paket & koneksi tersedia) ---
+    if _LOTTIE_AVAILABLE:
+        _anim = load_lottie_animation(LOTTIE_GERMANY_URL)
+        if _anim:
+            st_lottie(_anim, height=200, key="hero_lottie")
 
     # --- Kenapa belajar di sini (3 highlight) ---
     why_cols = st.columns(3)
@@ -947,8 +1113,9 @@ def hero_section():
         ("vokabeln", "🗂️", "Vokabeln", "Kartu kosakata bertema, lengkap dengan audio, contoh kalimat & tips mengingat."),
         ("grammatik", "📘", "Grammatik", "Ringkasan grammar A1-A2 yang paling sering dipakai sehari-hari."),
         ("verben", "🔤", "Verben", "Latihan konjugasi verba dasar seperti sein, haben, lernen, fahren."),
-        ("games", "🎮", "Mini-Games", "Wort-Match & Satz-Bauer — asah kosakata & tata kalimat sambil main."),
+        ("games", "🎮", "Mini-Games", "Wort-Match, Satz-Bauer, Artikel-Duell, Wort-Puzzle & Hör-Quiz — asah kosakata sambil main."),
         ("quiz", "📝", "Quiz", f"Uji pemahamanmu lewat {len(QUESTIONS)} soal campuran A1 & A2."),
+        ("statistik", "📊", "Statistik", "Pantau XP, kosakata dikuasai, dan papan peringkat komunitas."),
     ]
     fcols = st.columns(2)
     for i, (page_key, icon, title, desc) in enumerate(feature_cards):
@@ -1000,6 +1167,13 @@ def vocab_section():
 
         st.write("")
 
+        # --- Pencarian kosakata (fitur dari draft "Gemini"): mencari lintas
+        # SEMUA kategori, jadi kalau ada hasil ia otomatis menimpa tampilan
+        # grid kategori aktif di bawah (bukan cuma mem-filter 1 kategori). ---
+        search_query = st.text_input(
+            "🔍 Cari kosakata (Deutsch atau Indonesisch)…", key="vocab_search", placeholder="mis. Wasser / air"
+        )
+
         # --- Filter tambahan: status hafalan (Semua / Belum / Sudah Hafal) ---
         st.session_state.filter_mastery = st.radio(
             "Filter status",
@@ -1009,31 +1183,44 @@ def vocab_section():
             index=["Semua", "Belum Hafal", "Sudah Hafal"].index(st.session_state.filter_mastery),
         )
 
-        # --- Grid kartu, difilter murni berdasarkan level aktif ---
-        # FIX BUG: A1 hanya menampilkan A1; A2 menampilkan A1+A2 (tanpa fallback
-        # yang membocorkan level lain saat suatu kategori kosong di A1).
-        all_items = VOCAB[st.session_state.current_cat]
-        if st.session_state.level == "A1":
-            items = [v for v in all_items if v["lvl"] == "A1"]
+        if search_query.strip():
+            # --- Mode pencarian: gabungkan semua kategori, filter level & query ---
+            pool = ALL_VOCAB if st.session_state.level == "A2" else [v for v in ALL_VOCAB if v["lvl"] == "A1"]
+            q = search_query.strip().lower()
+            items = [v for v in pool if q in v["de"].lower() or q in v["id"].lower()]
+            if st.session_state.filter_mastery == "Belum Hafal":
+                items = [v for v in items if v["de"] not in st.session_state.mastered_vocab]
+            elif st.session_state.filter_mastery == "Sudah Hafal":
+                items = [v for v in items if v["de"] in st.session_state.mastered_vocab]
+            st.caption(f"🔎 {len(items)} hasil untuk \"{search_query.strip()}\" (semua kategori)")
+            active_cat_label = "Hasil Pencarian"
         else:
-            items = list(all_items)  # A2 = gabungan A1 + A2
+            # --- Grid kartu, difilter murni berdasarkan level aktif ---
+            # FIX BUG: A1 hanya menampilkan A1; A2 menampilkan A1+A2 (tanpa fallback
+            # yang membocorkan level lain saat suatu kategori kosong di A1).
+            all_items = VOCAB[st.session_state.current_cat]
+            if st.session_state.level == "A1":
+                items = [v for v in all_items if v["lvl"] == "A1"]
+            else:
+                items = list(all_items)  # A2 = gabungan A1 + A2
 
-        # Terapkan filter status hafalan di atas hasil filter level
-        if st.session_state.filter_mastery == "Belum Hafal":
-            items = [v for v in items if v["de"] not in st.session_state.mastered_vocab]
-        elif st.session_state.filter_mastery == "Sudah Hafal":
-            items = [v for v in items if v["de"] in st.session_state.mastered_vocab]
+            # Terapkan filter status hafalan di atas hasil filter level
+            if st.session_state.filter_mastery == "Belum Hafal":
+                items = [v for v in items if v["de"] not in st.session_state.mastered_vocab]
+            elif st.session_state.filter_mastery == "Sudah Hafal":
+                items = [v for v in items if v["de"] in st.session_state.mastered_vocab]
+            active_cat_label = st.session_state.current_cat
 
         if not items:
             st.info(
-                f"Tidak ada kosakata yang cocok di kategori **{st.session_state.current_cat}** "
-                "dengan filter saat ini. Coba ganti level atau filter status di atas. 👆"
+                f"Tidak ada kosakata yang cocok di **{active_cat_label}** "
+                "dengan filter saat ini. Coba ganti level, kata kunci, atau filter status di atas. 👆"
             )
             return
 
         card_cols = st.columns(3)
         for idx, item in enumerate(items):
-            safe_cat = st.session_state.current_cat.replace(" ", "_").replace("&", "und")
+            safe_cat = active_cat_label.replace(" ", "_").replace("&", "und")
             card_key = f"{safe_cat}_{item['de']}".replace(" ", "_").replace(",", "").replace("'", "")
             flipped = st.session_state.flipped.get(card_key, False)
             mastered = item["de"] in st.session_state.mastered_vocab
@@ -1180,17 +1367,21 @@ def verb_section():
             add_xp(correct_count * 3, "Latihan konjugasi verba")
 
             if correct_count == total:
+                play_sfx("correct")
+                trigger_confetti()
                 st.markdown(
                     f'<div class="badge-success">🎉 Sempurna! {correct_count}/{total} benar untuk "{choice}".</div>',
                     unsafe_allow_html=True,
                 )
                 st.balloons()
             elif correct_count >= total * 0.5:
+                play_sfx("correct")
                 st.markdown(
                     f'<div class="badge-success">👍 Bagus! {correct_count}/{total} benar.</div>',
                     unsafe_allow_html=True,
                 )
             else:
+                play_sfx("wrong")
                 st.markdown(
                     f'<div class="badge-error">💪 Terus berlatih! {correct_count}/{total} benar.</div>',
                     unsafe_allow_html=True,
@@ -1218,19 +1409,57 @@ def _init_match_round():
     st.session_state.match_selected_id = None
 
 
+def _art_pool():
+    """Nomina yang dipakai game Artikel-Duell, difilter sesuai level aktif
+    (sama seperti pola filter di vocab_section: A1 = A1 saja, A2 = A1+A2)."""
+    if st.session_state.level == "A1":
+        return [w for w in NOUN_POOL if w["lvl"] == "A1"]
+    return NOUN_POOL
+
+
+def _new_scramble():
+    """Ambil kosakata acak (nomina, artikel dibuang) lalu acak hurufnya
+    untuk game Wort-Puzzle."""
+    item = random.choice(NOUN_POOL) if NOUN_POOL else random.choice(ALL_VOCAB)
+    parts = item["de"].split(" ", 1)
+    raw = parts[1] if len(parts) == 2 and parts[0] in ("der", "die", "das") else item["de"]
+    letters = list(raw.replace(" ", ""))
+    random.shuffle(letters)
+    st.session_state.scramble_current = item
+    st.session_state.scramble_raw = raw
+    st.session_state.scramble_shuffled = "".join(letters)
+
+
+def _new_listen():
+    """Ambil kosakata acak + 3 opsi arti pengecoh untuk game Hör-Quiz."""
+    item = random.choice(ALL_VOCAB)
+    opts = {item["id"]}
+    guard = 0
+    while len(opts) < 4 and len(opts) < len(ALL_VOCAB) and guard < 50:
+        opts.add(random.choice(ALL_VOCAB)["id"])
+        guard += 1
+    opts = list(opts)
+    random.shuffle(opts)
+    st.session_state.listen_current = item
+    st.session_state.listen_options = opts
+
+
 def games_section():
     with st.container(key="games_wrap"):
         st.markdown(
             """
             <div class="section-head">
               <h2>Mini-Games</h2>
-              <p>Belajar sambil main: jodohkan kata di Wort-Match, atau susun kalimat di Satz-Bauer.</p>
+              <p>Belajar sambil main: jodohkan kata, susun kalimat, tebak artikel, pecahkan huruf acak,
+              atau uji pendengaranmu.</p>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-        tab1, tab2 = st.tabs(["🧩 Wort-Match", "🧱 Satz-Bauer"])
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(
+            ["🧩 Wort-Match", "🧱 Satz-Bauer", "🔤 Artikel-Duell", "🔡 Wort-Puzzle", "🎧 Hör-Quiz"]
+        )
 
         # ---------------- GAME 1: WORT-MATCH ----------------
         with tab1:
@@ -1269,6 +1498,7 @@ def games_section():
                     w["de"] == sel_de and w["id"] == sel_id for w in st.session_state.match_pairs["raw"]
                 )
                 if is_correct_pair:
+                    play_sfx("correct")
                     st.success(f"✅ Benar! {sel_de} = {sel_id}")
                     st.session_state.match_solved.add(sel_de)
                     st.session_state.match_solved.add(sel_id)
@@ -1277,12 +1507,14 @@ def games_section():
                     add_xp(10, "Mencocokkan kata dengan benar")
                     st.rerun()
                 else:
+                    play_sfx("wrong")
                     st.error("❌ Pasangan kurang tepat, coba lagi.")
                     st.session_state.match_selected_de = None
                     st.session_state.match_selected_id = None
 
             total_pairs = len(st.session_state.match_pairs["de"])
             if total_pairs and len(st.session_state.match_solved) >= total_pairs * 2:
+                trigger_confetti()
                 st.balloons()
                 st.success("🎉 Selamat! Kamu menyelesaikan ronde ini!")
                 if st.button("🔄 Mainkan Ronde Baru", key="reset_match", type="primary"):
@@ -1320,10 +1552,13 @@ def games_section():
             with b1:
                 if st.button("✅ Cek Kalimat", type="primary", use_container_width=True):
                     if current_sentence.strip() == sb_item["target"]:
+                        play_sfx("correct")
+                        trigger_confetti()
                         st.success("🎉 Perfekt! Struktur kalimatmu benar!")
                         add_xp(15, "Menyusun kalimat dengan benar")
                         st.balloons()
                     else:
+                        play_sfx("wrong")
                         st.error(f"❌ Belum tepat. Kalimat yang benar: {sb_item['target']}")
             with b2:
                 if st.button("↺ Reset", use_container_width=True):
@@ -1333,6 +1568,126 @@ def games_section():
                 if st.button("➡️ Kalimat Berikutnya", use_container_width=True):
                     st.session_state.sb_index = (st.session_state.sb_index + 1) % len(SENTENCE_BUILDER_DATA)
                     st.session_state.sb_user_words = []
+                    st.rerun()
+
+        # ---------------- GAME 3: ARTIKEL-DUELL ----------------
+        with tab3:
+            st.markdown('<div class="game-box">Tebak artikel yang tepat — der, die, atau das — untuk kata '
+                        'benda berikut.</div>', unsafe_allow_html=True)
+
+            pool = _art_pool()
+            if not pool:
+                st.info("Belum ada kosakata nomina untuk level ini.")
+            else:
+                if st.session_state.art_current is None:
+                    st.session_state.art_current = random.choice(pool)
+                noun = st.session_state.art_current
+                word_only = noun["de"].split(" ", 1)[1]
+
+                st.markdown(
+                    f'<div class="sb-sentence" style="text-align:center; font-size:1.3rem;">{word_only}</div>',
+                    unsafe_allow_html=True,
+                )
+                st.caption(f"Arti: {noun['id']}")
+
+                chosen = None
+                ac1, ac2, ac3 = st.columns(3)
+                with ac1:
+                    if st.button("der", key="art_der", use_container_width=True):
+                        chosen = "der"
+                with ac2:
+                    if st.button("die", key="art_die", use_container_width=True):
+                        chosen = "die"
+                with ac3:
+                    if st.button("das", key="art_das", use_container_width=True):
+                        chosen = "das"
+
+                if chosen:
+                    correct_article = noun["de"].split(" ", 1)[0]
+                    st.session_state.art_total += 1
+                    if chosen == correct_article:
+                        st.session_state.art_score += 1
+                        play_sfx("correct")
+                        trigger_confetti()
+                        st.success(f"✅ Benar! {noun['de']}")
+                        add_xp(8, "Artikel-Duell benar")
+                    else:
+                        play_sfx("wrong")
+                        st.error(f"❌ Kurang tepat. Yang benar: **{noun['de']}**")
+                    st.session_state.art_current = None
+                    st.rerun()
+
+                if st.session_state.art_total:
+                    st.markdown(
+                        f'<div class="q-score">Skor Artikel-Duell: '
+                        f'{st.session_state.art_score}/{st.session_state.art_total}</div>',
+                        unsafe_allow_html=True,
+                    )
+
+        # ---------------- GAME 4: WORT-PUZZLE ----------------
+        with tab4:
+            st.markdown('<div class="game-box">Susun ulang huruf yang teracak menjadi kosakata bahasa Jerman '
+                        'yang benar.</div>', unsafe_allow_html=True)
+
+            if st.session_state.scramble_current is None:
+                _new_scramble()
+
+            st.markdown(
+                f'<div class="sb-sentence" style="text-align:center; letter-spacing:3px;">'
+                f'{st.session_state.scramble_shuffled.upper()}</div>',
+                unsafe_allow_html=True,
+            )
+            st.caption(f"Petunjuk arti: {st.session_state.scramble_current['id']}")
+
+            scramble_ans = st.text_input("Jawabanmu:", key="scramble_ans")
+            sc1, sc2 = st.columns(2)
+            with sc1:
+                if st.button("✅ Cek Jawaban", key="scramble_check", type="primary", use_container_width=True):
+                    if scramble_ans.strip().lower() == st.session_state.scramble_raw.lower():
+                        play_sfx("correct")
+                        trigger_confetti()
+                        st.success("🎉 Tepat sekali!")
+                        add_xp(12, "Wort-Puzzle terpecahkan")
+                        _new_scramble()
+                        st.rerun()
+                    else:
+                        play_sfx("wrong")
+                        st.error("❌ Belum tepat, coba lagi.")
+            with sc2:
+                if st.button("🔄 Kata Baru", key="scramble_new", use_container_width=True):
+                    _new_scramble()
+                    st.rerun()
+
+        # ---------------- GAME 5: HÖR-QUIZ ----------------
+        with tab5:
+            st.markdown('<div class="game-box">Dengarkan pengucapan lewat tombol audio, lalu pilih arti yang '
+                        'tepat dalam Bahasa Indonesia.</div>', unsafe_allow_html=True)
+
+            if st.session_state.listen_current is None:
+                _new_listen()
+            listen_item = st.session_state.listen_current
+
+            if st.button("🔊 Putar Audio", key="listen_play", use_container_width=True):
+                play_pronunciation(listen_item["de"])
+
+            picked = st.radio(
+                "Pilih arti yang tepat:", st.session_state.listen_options,
+                key="listen_radio", index=None,
+            )
+            if st.button("Kirim Jawaban", key="listen_submit", type="primary", use_container_width=True):
+                if picked is None:
+                    st.warning("Pilih salah satu jawaban dulu, ya.")
+                elif picked == listen_item["id"]:
+                    play_sfx("correct")
+                    trigger_confetti()
+                    st.success("✅ Benar! Pendengaranmu tajam.")
+                    add_xp(10, "Hör-Quiz benar")
+                    _new_listen()
+                    st.rerun()
+                else:
+                    play_sfx("wrong")
+                    st.error(f"❌ Kurang tepat. Jawaban benar: {listen_item['id']}")
+                    _new_listen()
                     st.rerun()
 
 
@@ -1364,7 +1719,10 @@ def quiz_section():
                             st.session_state.q_answered = True
                             if i == item["a"]:
                                 st.session_state.q_score += 1
+                                play_sfx("correct")
                                 add_xp(8, "Jawaban quiz benar")
+                            else:
+                                play_sfx("wrong")
                             st.rerun()
                 else:
                     # --- Umpan balik visual (badge) ---
@@ -1420,6 +1778,7 @@ def quiz_section():
                 score_ratio = st.session_state.q_score / len(QUESTIONS)
                 if score_ratio == 1.0:
                     st.success("🏆 Luar biasa! Kamu meraih skor sempurna!")
+                    trigger_confetti()
                     st.balloons()
                 elif score_ratio >= 0.75:
                     st.info("👍 Hasil yang sangat baik, terus pertahankan!")
@@ -1432,6 +1791,79 @@ def quiz_section():
                 if st.button("Nochmal versuchen", key="restart_quiz", type="primary", use_container_width=True):
                     reset_quiz()
                     st.rerun()
+
+
+def statistik_section():
+    with st.container(key="stat_wrap"):
+        st.markdown(
+            """
+            <div class="section-head">
+              <h2>Statistik & Papan Peringkat</h2>
+              <p>Pantau progres belajarmu dan lihat posisimu di papan peringkat komunitas (contoh/demo).</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        tab_a, tab_b = st.tabs(["📊 Progresku", "🏆 Papan Peringkat"])
+
+        with tab_a:
+            st.markdown(f"**🎚️ Level {st.session_state.xp_level}**")
+            xp_in_level = st.session_state.xp % 100
+            st.progress(xp_in_level / 100.0,
+                        text=f"{xp_in_level}/100 XP menuju Level {st.session_state.xp_level + 1}")
+            st.write("")
+
+            s1, s2, s3, s4 = st.columns(4)
+            with s1:
+                st.metric("Total XP", st.session_state.xp)
+            with s2:
+                st.metric("Streak Harian", f"{st.session_state.streak} hari")
+            with s3:
+                st.metric("Kosakata Dikuasai", f"{len(st.session_state.mastered_vocab)}/{TOTAL_VOCAB}")
+            with s4:
+                st.metric("Lencana", len(st.session_state.badges))
+
+            st.write("")
+            st.markdown("**Skor mini-games sesi ini**")
+            g1, g2, g3 = st.columns(3)
+            with g1:
+                st.metric("Artikel-Duell", f"{st.session_state.art_score}/{st.session_state.art_total}")
+            with g2:
+                st.metric("Skor Quiz Tertinggi", f"{st.session_state.q_high_score}/{len(QUESTIONS)}")
+            with g3:
+                solved_pairs = len(st.session_state.match_solved) // 2 if st.session_state.match_pairs else 0
+                st.metric("Wort-Match Diselesaikan", solved_pairs)
+
+            st.write("")
+            if st.session_state.mastered_vocab:
+                st.markdown("**Kosakata yang sudah kamu hafal**")
+                mastered_items = [
+                    it for it in ALL_VOCAB if it["de"] in st.session_state.mastered_vocab
+                ]
+                for it in mastered_items:
+                    st.markdown(
+                        f'<div class="verb-row correct">✓ <b>{it["de"]}</b> — {it["id"]}</div>',
+                        unsafe_allow_html=True,
+                    )
+            else:
+                st.info("Belum ada kosakata yang ditandai hafal. Buka halaman Vokabeln untuk mulai menandai. 👆")
+
+        with tab_b:
+            st.caption("Papan peringkat contoh (demo lokal) untuk membandingkan progresmu dengan pemain lain.")
+            demo_rows = [
+                {"Nama": "Lukas M.", "XP": 1250},
+                {"Nama": "Siti A.", "XP": 980},
+                {"Nama": f"{st.session_state.username or 'Kamu'} (Kamu)", "XP": st.session_state.xp},
+                {"Nama": "Hans K.", "XP": 450},
+                {"Nama": "Clara W.", "XP": 300},
+            ]
+            demo_rows.sort(key=lambda r: r["XP"], reverse=True)
+            ranked_rows = [
+                {"Peringkat": i, "Nama": row["Nama"], "XP": row["XP"]}
+                for i, row in enumerate(demo_rows, start=1)
+            ]
+            st.table(ranked_rows)
 
 
 def footer():
@@ -1447,6 +1879,7 @@ inject_css()
 if not st.session_state.logged_in:
     login_screen()
 else:
+    render_sidebar_profile()
     top_nav()
 
     page = st.session_state.page
@@ -1462,6 +1895,8 @@ else:
         games_section()
     elif page == "quiz":
         quiz_section()
+    elif page == "statistik":
+        statistik_section()
 
     st.write("")
     footer()
