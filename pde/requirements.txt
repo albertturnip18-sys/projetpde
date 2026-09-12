@@ -1,4 +1,6 @@
-streamlit
-pandas
+streamlit>=1.32
+
+# Opsional — hanya dipakai untuk animasi Lottie di landing page.
+# Jika tidak diinstal, app tetap jalan normal, animasinya saja yang tidak muncul.
 requests
 streamlit-lottie
