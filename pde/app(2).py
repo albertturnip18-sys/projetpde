@@ -810,6 +810,18 @@ def inject_css():
         .quiz-done-caption { text-align:center; color:rgba(242,236,221,0.7); font-size:0.9rem; }
 
         /* ---------- Landing page (Beranda) ---------- */
+        /* Animasi ikon melayang murni CSS (tanpa paket/internet eksternal) —
+           dipakai sebagai pengganti animasi Lottie kalau paket 'streamlit-lottie'
+           belum terpasang atau koneksi ke lottie.host gagal. */
+        .hero-anim { display:flex; gap:22px; justify-content:center; align-items:flex-end; margin:8px 0 24px; }
+        .hero-anim .float-icon {
+            font-size:2.3rem; display:inline-block;
+            animation: float-bounce 2.4s ease-in-out infinite;
+        }
+        @keyframes float-bounce {
+            0%, 100% { transform:translateY(0px); }
+            50% { transform:translateY(-14px); }
+        }
         .why-card { text-align:center; padding:4px 2px; }
         .why-icon { font-size:1.7rem; margin-bottom:6px; }
         .why-title { font-weight:700; font-family:'Space Grotesk',sans-serif; font-size:0.95rem; margin-bottom:4px; }
@@ -1037,11 +1049,32 @@ def hero_section():
         unsafe_allow_html=True,
     )
 
-    # --- Animasi Lottie (opsional, hanya tampil jika paket & koneksi tersedia) ---
+    # --- Animasi landing page ---
+    # Lottie (butuh paket 'streamlit-lottie' + koneksi ke lottie.host) dicoba
+    # dulu sebagai bonus. Kalau gagal (paket belum terpasang, offline, atau
+    # link Lottie kadaluarsa/diblokir jaringan), tampilkan animasi CSS murni
+    # di bawah ini sebagai gantinya — 100% lokal, tidak butuh internet/paket
+    # tambahan, jadi DIJAMIN selalu muncul.
+    _lottie_shown = False
     if _LOTTIE_AVAILABLE:
         _anim = load_lottie_animation(LOTTIE_GERMANY_URL)
         if _anim:
             st_lottie(_anim, height=200, key="hero_lottie")
+            _lottie_shown = True
+
+    if not _lottie_shown:
+        st.markdown(
+            """
+            <div class="hero-anim">
+              <span class="float-icon" style="animation-delay:0s;">🇩🇪</span>
+              <span class="float-icon" style="animation-delay:.2s;">📚</span>
+              <span class="float-icon" style="animation-delay:.4s;">✏️</span>
+              <span class="float-icon" style="animation-delay:.6s;">💡</span>
+              <span class="float-icon" style="animation-delay:.8s;">🎯</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     # --- Kenapa belajar di sini (3 highlight) ---
     why_cols = st.columns(3)
